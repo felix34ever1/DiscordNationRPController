@@ -1,0 +1,25 @@
+{
+    "list":[{
+        "name":"Test",
+        "player name":"felix34ever1",
+        "starting location":"Europe",
+        "urban population":10,
+        "rural population":10,
+        "assets wealth":[],
+        "assets political":[],
+        "assets force":[]
+
+    }
+    ,
+    {
+        "name":"Test2",
+        "player name":"felix34ever1",
+        "starting location":"Europe",
+        "urban population":10,
+        "rural population":10,
+        "assets wealth":["bank"],
+        "assets political":[],
+        "assets force":[]
+
+    }]
+}
