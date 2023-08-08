@@ -1,4 +1,6 @@
 ### Nation Class for holding all data on a nation.
+from typing import List
+from asset import Asset
 
 class Nation():
 
@@ -12,7 +14,11 @@ class Nation():
         # Population
         self.urban_population = 0
         self.rural_population = 0
-        
+
+        # Trackers
+        self.political_stability = 0
+        self.economy_strength = 0
+
         # Raw resources are the total income of resources before they are used for anything.
         self.industrial_metals_raw = 0
         self.rare_metals_raw = 0
@@ -42,21 +48,92 @@ class Nation():
         self.power = 0
 
         # Asset list is used to store asset objects.
-        self.assets_wealth = []
-        self.assets_political = []
-        self.assets_force = []     
-    
-    def import_data(self,json_data:dict):
+        self.assets_wealth: List[Asset] = []
+        self.assets_political: List[Asset] = []
+        self.assets_force: List[Asset] = []
+
+        # List used to store asset IDs
+        self.assets_wealth_id: list[int] = []     
+        self.assets_political_id: list[int] = []
+        self.assets_force_id: list[int] = []
+
+    def import_data(self,json_data:dict): # Takes the data of a json (Now in python dict not anymore json) and loads the data
         """Using json_data, define all the variables of the nation"""
         self.name = json_data["name"]
         self.player_name = json_data["player name"]
         self.starting_location = json_data["starting location"]
+
         self.urban_population = json_data["urban population"]
         self.rural_population = json_data["rural population"]
-        
-        self.assets_wealth = json_data["assets wealth"]
-        self.assets_political = json_data["assets political"]
-        self.assets_force = json_data["assets force"]
 
-    def display(self):
-        print(f"{self.name} - Population:{self.urban_population+self.rural_population}")
+        self.political_stability = json_data["political stability"]
+        self.economy_strength = json_data["economy strength"]
+        
+        self.assets_wealth_id = json_data["assets wealth"]
+        self.assets_political_id = json_data["assets political"]
+        self.assets_force_id = json_data["assets force"]
+    
+    def hook_assets(self,asset_list:list[Asset]):
+        """Finds all the assets that belong to the Nation and links them into its own list, as well as telling the asset which nation it belongs to"""
+        # Wealth Assets
+        for id in self.assets_wealth_id:
+            for asset in asset_list:
+                if asset.get_uid() == id:
+                    self.assets_wealth.append(asset) # Adds the asset to its collection
+                    asset.hook(self) # Tells the asset which nation it belongs to
+        # Political Assets
+        for id in self.assets_political_id:
+            for asset in asset_list:
+                if asset.get_uid() == id:
+                    self.assets_political.append(asset) # Adds the asset to its collection
+                    asset.hook(self) # Tells the asset which nation it belongs to
+        # Force Assets
+        for id in self.assets_political_id:
+            for asset in asset_list:
+                if asset.get_uid() == id:
+                    self.assets_political.append(asset) # Adds the asset to its collection
+                    asset.hook(self) # Tells the asset which nation it belongs to
+
+    def export_data(self)->dict:
+        """Create a set of json exportable data"""
+        json_data = {}
+        json_data["name"] = self.name
+        json_data["player name"] = self.player_name
+        json_data["starting location"] = self.starting_location
+
+        json_data["urban population"] = self.urban_population
+        json_data["rural population"] = self.rural_population
+
+        json_data["political stability"] = self.political_stability
+        json_data["economy strength"] = self.economy_strength
+
+        # Empties the id lists and then reupdates them with all the asset ids.
+        self.assets_wealth_id = []
+        for asset in self.assets_wealth:
+            self.assets_wealth_id.append(asset.get_uid())
+
+        self.assets_political_id = []
+        for asset in self.assets_political:
+            self.assets_political_id.append(asset.get_uid())      
+
+        self.assets_force_id = []
+        for asset in self.assets_force:
+            self.assets_force_id.append(asset.get_uid())  
+
+        json_data["assets wealth"] = self.assets_wealth_id
+        json_data["assets political"] = self.assets_political_id
+        json_data["assets force"] = self.assets_force_id
+        return(json_data)
+
+    def display(self)->str:
+        text = (
+f'''
+{self.name}
+Population:{self.urban_population+self.rural_population}
+Stability:{self.political_stability}
+Economy:{self.economy_strength}
+Wealth Assets:{self.assets_wealth}
+Political Assets:{self.assets_political}
+Force Assets:{self.assets_force}
+''')
+        return(text)
