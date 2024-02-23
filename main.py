@@ -3,6 +3,7 @@ from nation import Nation
 import assethandler
 
 
+
 ### Loading Procedure:
 # 1. Put all assets json into a list
 # 2. Convert asset json into asset objects using an asset converter script and store them in three lists (wealth,political,force)

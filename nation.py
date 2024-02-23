@@ -47,6 +47,11 @@ class Nation():
         self.military_products = 0
         self.power = 0
 
+        # Power Numbers
+        self.wealth_number: int = 0
+        self.political_number: int = 0
+        self.force_number: int = 0
+
         # Asset list is used to store asset objects.
         self.assets_wealth: List[Asset] = []
         self.assets_political: List[Asset] = []
@@ -56,6 +61,14 @@ class Nation():
         self.assets_wealth_id: list[int] = []     
         self.assets_political_id: list[int] = []
         self.assets_force_id: list[int] = []
+
+    def import_data_on_create(self,name:str,urb_pop:int,rur_pop:int,wealth:int,political:int,force:int):
+        self.name = name
+        self.urban_population = urb_pop
+        self.rural_population = rur_pop
+        self.wealth_number = wealth
+        self.political_number = political
+        self.force_number = force
 
     def import_data(self,json_data:dict): # Takes the data of a json (Now in python dict not anymore json) and loads the data
         """Using json_data, define all the variables of the nation"""
@@ -126,14 +139,23 @@ class Nation():
         return(json_data)
 
     def display(self)->str:
+        wealth_asset_string = "|"
+        for asset in self.assets_wealth:
+            wealth_asset_string+=asset.name+"|"
+        political_asset_string = "|"
+        for asset in self.assets_political:
+            political_asset_string+=asset.name+"|"
+        force_asset_string = "|"
+        for asset in self.assets_force:
+            force_asset_string+=asset.name+"|"
         text = (
 f'''
 {self.name}
 Population:{self.urban_population+self.rural_population}
 Stability:{self.political_stability}
 Economy:{self.economy_strength}
-Wealth Assets:{self.assets_wealth}
-Political Assets:{self.assets_political}
-Force Assets:{self.assets_force}
+Wealth Assets:{wealth_asset_string}
+Political Assets:{political_asset_string}
+Force Assets:{force_asset_string}
 ''')
         return(text)
