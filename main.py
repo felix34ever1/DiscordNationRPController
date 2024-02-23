@@ -27,6 +27,8 @@ def load_assets(asset_list:list):
     for asset_json in imported_assets["list"]:
         assethandler.create_asset(asset_json,asset_list)
 
+    asset_file.close()
+
 def load_nations(nation_list:list,asset_list:list):
     """Takes a list and loads it with Nation objects from the json savefile"""
     nation_file = open("nation.json","r")
@@ -39,6 +41,8 @@ def load_nations(nation_list:list,asset_list:list):
         new_nation.hook_assets(asset_list)
         nation_list.append(new_nation)
     
+    nation_file.close()
+    
 
 def save_nations(nation_list: list[Nation]):
     """Saves all the nations from a list of nations to a json file"""
@@ -50,11 +54,11 @@ def save_nations(nation_list: list[Nation]):
     file = open("nation.json","w") # Opens the json file
     file.write(save_data_json) # Writes json string into the file
     file.close()
-    print(save_data)
 
 
 
-
+nation_list = []
+asset_list = []
 
 
 

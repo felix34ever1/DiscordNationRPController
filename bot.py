@@ -50,6 +50,14 @@ async def nationlookup(context:commands.Context,input_text):
                 if nation.name == input_text:
                     await channel.send(nation.display())
 
+@bot.command()
+async def savenations(context:commands.Context):
+    channel = context.message.channel
+    author_roles = context.message.author.roles
+    for role in author_roles:
+        if role.name == ">Administrator":
+            main.save_nations(nation_list)
+
 
     # shutdown
 @bot.command()
@@ -108,12 +116,13 @@ async def nationsignup(context: commands.Context):
                         except asyncio.TimeoutError:
                             await DM_target.send("Timeout error. Please try again")
                         else:
-                            DM_target.send(f"Allocating {points_left} to force")
+                            await DM_target.send(f"Allocating {points_left} to force")
                             force_points = points_left
                             new_nation = Nation()
                             new_nation.import_data_on_create(nation_name.content,int(urban_population.content),int(rural_population.content),wealth_points,political_points,force_points)
                             print(f"succesfully created {nation_name.content}")
                             nation_list.append(new_nation)    
+                            main.save_nations(nation_list)
                         
 
 

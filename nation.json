@@ -25,6 +25,18 @@
             ],
             "assets political": [],
             "assets force": []
+        },
+        {
+            "name": "Test3",
+            "player name": "",
+            "starting location": "",
+            "urban population": 30000000,
+            "rural population": 100000000,
+            "political stability": 0,
+            "economy strength": 0,
+            "assets wealth": [],
+            "assets political": [],
+            "assets force": []
         }
     ]
 }
