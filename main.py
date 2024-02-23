@@ -1,5 +1,6 @@
 import json
 from nation import Nation
+from asset import Asset
 import assethandler
 
 
@@ -43,6 +44,19 @@ def load_nations(nation_list:list,asset_list:list):
     
     nation_file.close()
     
+def save_assets(asset_list:list[Asset]):
+    """Save assets into json file :)"""
+    save_data = {"list":[]}
+    
+    for asset in asset_list: # Extract all data into one list
+        asset_save_data = asset.export_asset()
+        save_data["list"].append(asset_save_data)
+
+    save_data_json = json.dumps(save_data,indent=4) # turns python data to a json
+    with open("nation.json","w") as file: # open json file
+        file.write(save_data_json)
+
+            
 
 def save_nations(nation_list: list[Nation]):
     """Saves all the nations from a list of nations to a json file"""

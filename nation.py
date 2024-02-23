@@ -69,6 +69,8 @@ class Nation():
         self.wealth_number = wealth
         self.political_number = political
         self.force_number = force
+        self.political_stability = 50
+        self.economy_strength = 50
 
     def import_data(self,json_data:dict): # Takes the data of a json (Now in python dict not anymore json) and loads the data
         """Using json_data, define all the variables of the nation"""

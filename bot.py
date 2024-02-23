@@ -41,7 +41,7 @@ async def test(context:commands.Context,input_text):
     # nationlookup
 @bot.command()
 async def nationlookup(context:commands.Context,input_text):
-    """Gives data on all nation entities in the game"""
+    """Gives data on one nation entities in the game"""
     channel = context.message.channel
     author_roles = context.message.author.roles
     for role in author_roles:
@@ -50,12 +50,26 @@ async def nationlookup(context:commands.Context,input_text):
                 if nation.name == input_text:
                     await channel.send(nation.display())
 
+    # nationlookupall
+@bot.command()
+async def nationlookupall(context:commands.Context):
+    """Gives data on all nation entities in the game"""
+    channel = context.message.channel
+    author_roles = context.message.author.roles
+    for role in author_roles:
+        if role.name == ">Administrator":
+            for nation in nation_list:
+                await channel.send(nation.display())
+
+
+    #savenations
 @bot.command()
 async def savenations(context:commands.Context):
     channel = context.message.channel
     author_roles = context.message.author.roles
     for role in author_roles:
         if role.name == ">Administrator":
+            main.save_assets(asset_list)
             main.save_nations(nation_list)
 
 
