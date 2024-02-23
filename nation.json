@@ -1,14 +1,47 @@
 {
     "list": [
-       {
-            "name": "United Kingdom",
-            "player name": "",
-            "starting location": "",
-            "urban population": 40000000,
+        {
+            "name": "East Germany",
+            "player name": "423545593991004160",
+            "starting location": "Europe",
+            "urban population": 35000000,
+            "rural population": 25000000,
+            "political stability": 50,
+            "economy strength": 50,
+            "wealth number": 0,
+            "political number": 0,
+            "force number": 0,
+            "assets wealth": [],
+            "assets political": [],
+            "assets force": []
+        },
+        {
+            "name": "Khazak People's Junta",
+            "player name": "226076978476875777",
+            "starting location": "Asia",
+            "urban population": 2000000,
             "rural population": 30000000,
-            "political stability": 0,
-            "economy strength": 0,
-            "assets wealth": [0],
+            "political stability": 50,
+            "economy strength": 50,
+            "wealth number": 3,
+            "political number": 0,
+            "force number": 3,
+            "assets wealth": [],
+            "assets political": [],
+            "assets force": []
+        },
+        {
+            "name": "The Islamic Republic of Iran",
+            "player name": "549995061136326666",
+            "starting location": "Asia",
+            "urban population": 68000000,
+            "rural population": 19000000,
+            "political stability": 50,
+            "economy strength": 50,
+            "wealth number": 2,
+            "political number": 1,
+            "force number": 2,
+            "assets wealth": [],
             "assets political": [],
             "assets force": []
         }

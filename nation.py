@@ -62,13 +62,15 @@ class Nation():
         self.assets_political_id: list[int] = []
         self.assets_force_id: list[int] = []
 
-    def import_data_on_create(self,name:str,urb_pop:int,rur_pop:int,wealth:int,political:int,force:int):
+    def import_data_on_create(self,name:str,urb_pop:int,rur_pop:int,wealth:int,political:int,force:int,owner_id:int,location):
         self.name = name
+        self.starting_location = location
         self.urban_population = urb_pop
         self.rural_population = rur_pop
         self.wealth_number = wealth
         self.political_number = political
         self.force_number = force
+        self.player_name = str(owner_id)
         self.political_stability = 50
         self.economy_strength = 50
 
@@ -87,6 +89,10 @@ class Nation():
         self.assets_wealth_id = json_data["assets wealth"]
         self.assets_political_id = json_data["assets political"]
         self.assets_force_id = json_data["assets force"]
+
+        self.wealth_number = json_data["wealth number"]
+        self.political_number = json_data["political number"]
+        self.wealth_number = json_data["force number"]
     
     def hook_assets(self,asset_list:list[Asset]):
         """Finds all the assets that belong to the Nation and links them into its own list, as well as telling the asset which nation it belongs to"""
@@ -121,6 +127,10 @@ class Nation():
 
         json_data["political stability"] = self.political_stability
         json_data["economy strength"] = self.economy_strength
+        
+        json_data["wealth number"] = self.wealth_number
+        json_data["political number"] = self.political_number
+        json_data["force number"] = self.wealth_number
 
         # Empties the id lists and then reupdates them with all the asset ids.
         self.assets_wealth_id = []
