@@ -2,6 +2,7 @@ import discord
 import os
 import asyncio
 import main
+import time
 from typing import List
 from discord import app_commands
 from discord.ext import commands
@@ -38,15 +39,24 @@ async def test(context:commands.Context,input_text):
     else:
         await context.channel.send("Hello")
 
-    # nationlookup
+    # nationinfo
 @bot.command()
-async def nationlookup(context:commands.Context):
+async def nationinfo(context:commands.Context):
     """Gives data on one nation entities in the game"""
     channel = context.message.channel
     author_roles = context.message.author.roles
     for nation in nation_list:
         if nation.player_name == str(context.message.author.id):
             await channel.send(nation.display())
+
+    # nationeconomy
+@bot.command()
+async def nationeconomy(context:commands.Context):
+    """Gives economic report on nation"""
+    channel = context.message.channel
+    for nation in nation_list:
+        if nation.player_name == str(context.message.author.id):
+            await channel.send(nation.economy_prediction())
 
     # nationlookupall
 @bot.command()
@@ -75,9 +85,12 @@ async def savenations(context:commands.Context):
 @bot.command()
 @commands.is_owner()
 async def shutdown(context:commands.Context):
+    print(f"shutting down at {time.ctime(time.time())}")
     main.save_assets(asset_list)
+    print("Assets Saved")
     main.save_nations(nation_list)
-    await context.bot.close()
+    print("Nations Saved")
+    await bot.close()
     await exit(0)
 
     # nationsignup

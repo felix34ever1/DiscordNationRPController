@@ -4,7 +4,14 @@
         {
             "uid":0,
             "name":"Industrial Processing Plant",
-            "type":"wealth"
+            "type":"wealth",
+            "construction time":0
+        },
+        {
+            "uid":1,
+            "name":"Petroleum Plant",
+            "type":"wealth",
+            "construction time":1
         }
     ]
 }
