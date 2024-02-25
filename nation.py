@@ -11,6 +11,10 @@ class Nation():
         self.player_name = "" # Discord ID
         self.starting_location = "" # Starting continent
 
+        # Spent resources this turn
+        self.used_production = 0
+        self.used_capital = 0
+
         # Capital (money)
         self.capital_current = 0
         # Bottom two are used to do calculations
@@ -92,7 +96,7 @@ class Nation():
         self.incoming_trade = 0
         self.outgoing_trade = 0
 
-        self.capital_raw = 0
+        self.capital_raw = self.capital_current
         self.industrial_metals_raw = 0
         self.rare_metals_raw = 0
         self.oil_raw = 0
@@ -120,13 +124,13 @@ class Nation():
         for asset in self.assets_force:
             asset.production()
 
-        self.capital = self.capital_raw
+        self.capital = self.capital_raw - self.used_capital
         self.industrial_metals = self.industrial_metals_raw
         self.rare_metals = self.rare_metals_raw
         self.oil = self.oil_raw
         self.natural_gas = self.natural_gas_raw
         self.food = self.food_raw
-        self.production = self.production_raw
+        self.production = self.production_raw - self.used_production
         self.plastics = self.plastics_raw
         self.electronics = self.electronics_raw
         self.advanced_parts = self.advanced_parts_raw
@@ -202,6 +206,9 @@ class Nation():
 
         self.capital_current = json_data["capital"]
 
+        self.used_production = json_data["used production"]
+        self.used_capital = json_data["used capital"]
+
         self.urban_population = json_data["urban population"]
         self.rural_population = json_data["rural population"]
 
@@ -240,11 +247,15 @@ class Nation():
     def export_data(self)->dict:
         """Create a set of json exportable data"""
         json_data = {}
+
         json_data["name"] = self.name
         json_data["player name"] = self.player_name
         json_data["starting location"] = self.starting_location
 
         json_data["capital"] = self.capital_current
+
+        json_data["used production"] = self.used_production
+        json_data["used capital"] = self.used_capital
 
         json_data["urban population"] = self.urban_population
         json_data["rural population"] = self.rural_population
@@ -255,6 +266,8 @@ class Nation():
         json_data["wealth number"] = self.wealth_number
         json_data["political number"] = self.political_number
         json_data["force number"] = self.force_number
+        
+
 
         # Empties the id lists and then reupdates them with all the asset ids.
         self.assets_wealth_id = []

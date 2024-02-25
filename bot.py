@@ -9,12 +9,14 @@ from discord.ext import commands
 
 from nation import Nation
 from asset import Asset
+import assethandler
 
 TOKEN = os.getenv("TOKEN")
 
 # Non Bot Stuff
 nation_list: list[Nation] = []
 asset_list: list[Asset] = []
+assetStore = assethandler.AssetStore()
 
 # Bot Stuff
 bot_intentions = discord.Intents.default() # Intents objects allowing a discord bot to do certain things.
@@ -80,7 +82,88 @@ async def savenations(context:commands.Context):
             main.save_assets(asset_list)
             main.save_nations(nation_list)
 
+    #managenation
+@bot.command()
+async def managenation(context:commands.Context):
+    """ A command that allows the user to access nation assets or build new ones"""
 
+    try:
+        channel = context.message.channel
+        author = context.author
+        cur_nation = None
+        
+        def check(m:discord.Message)->bool: # Check used to validate input
+            return(m.author == author)
+
+
+        for nation in nation_list: # Find the player nation
+            if nation.player_name == str(context.author.id):
+                cur_nation = nation
+        if type(cur_nation) == Nation: # Continue
+            await channel.send(
+f'''
+{cur_nation.name} Management - Please choose
+1. Acquire new assets
+2. Manage assets
+3. Cancel
+''')
+            
+            # Decide which direction to proceed
+            menu_choice = int((await bot.wait_for('message',check=check)).content)
+            selected_asset_text = ""
+            
+            if menu_choice == 1: # Buy Asset
+
+                await channel.send("Which type of asset would you like to view? wealth/political/force")
+                
+                type_choice = (await bot.wait_for('message',check=check)).content # Get type 
+
+                if type_choice == "wealth": # Wealth assets
+                    await channel.send("__Select which asset to build:__ (Write the name)")
+                    text = ""
+                    for asset in assetStore.wealth_assets:
+                        text+=f"- {asset}\n"
+
+                    await channel.send(text)
+                    
+                    selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
+
+                    
+                elif type_choice == "political":
+                    pass
+                
+                elif type_choice == "force":
+                    pass 
+                
+                
+                try: # Try creating the asset
+                    selected_asset = assetStore.wealth_assets[selected_asset_text]
+                    created_asset:Asset = selected_asset()
+                    if created_asset.cost_calculation(cur_nation): # Check if can add to nation
+                        created_asset.uid = assetStore.idpointer
+                        assetStore.idpointer+=1
+                        created_asset.building_purchase(cur_nation)
+                        asset_list.append(created_asset)
+                    else:
+                        await channel.send(f"Not enough resources to create {created_asset.name}")
+
+                        
+                    
+                except:
+                    await channel.send("Unregistered input")
+
+            elif menu_choice == 2:
+                pass # print assets and allow user to pick one
+            elif menu_choice == 3:
+                await channel.send("Cancelling management")
+            else:
+                await channel.send("Unrecognised command, exiting management")
+            
+        else: # Exit code
+            await channel.send("Nation not found")
+    except asyncio.TimeoutError:
+        await channel.send("Bot Timed Out")
+    
     # shutdown
 @bot.command()
 @commands.is_owner()
@@ -151,6 +234,7 @@ async def nationsignup(context: commands.Context):
 async def on_ready():
     status_channel = bot.get_channel(1138473460868317254)
     main.load_assets(asset_list)
+    assetStore.idpointer = len(asset_list)
     await status_channel.send("Asset Loading Complete")
     main.load_nations(nation_list,asset_list)
     await status_channel.send("Nation Loading Complete")
