@@ -7,6 +7,7 @@ class Asset():
         self.uid = -1 # Unique Identifier
         self.name = "" # Name of the asset e.g refinery or bank etc.
         self.type = "" # Wealth, Political or Force
+        self.tier = 1 # How high the country has to have a level in the type 
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
         self.activated = True
         

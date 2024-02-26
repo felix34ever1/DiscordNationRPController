@@ -10,22 +10,29 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.IPP()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
-    if new_asset["name"] == "Petroleum Plant":
+    elif new_asset["name"] == "Petroleum Plant":
         asset_object = asset.PP()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
-    if new_asset["name"] == "Solar Array":
+    elif new_asset["name"] == "Consumer Industry":
+        asset_object = asset.CI()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+    elif new_asset["name"] == "Solar Array":
         asset_object = asset.SA()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
-
+    elif new_asset["name"] == "Hydrostation Dam":
+        asset_object = asset.HD()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
 
 
 class AssetStore():
     def __init__(self) -> None:
-        self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP}
-        self.political_assets:Dict[str,function]={"Solar Array":asset.SA}
-        self.force_assets:Dict[str,function]={"Military Industry"}
+        self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP,"Commercial Industry":asset.CI}
+        self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD}
+        self.force_assets:Dict[str,function]={"Military Industry":asset.MI}
         self.idpointer = 0
 
     def buy_asset(self,asset_name:str,asset_type:str,asset_list:list,nation:nation.Nation)->str:
