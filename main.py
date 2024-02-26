@@ -53,7 +53,7 @@ def save_assets(asset_list:list[Asset]):
         save_data["list"].append(asset_save_data)
 
     save_data_json = json.dumps(save_data,indent=4) # turns python data to a json
-    with open("nation.json","w") as file: # open json file
+    with open("asset.json","w") as file: # open json file
         file.write(save_data_json)
 
             
