@@ -1,28 +1,21 @@
 {
     "list": [
         {
-            "name": "Brazil",
+            "name": "Israel",
             "player name": "226076978476875777",
-            "starting location": "South America",
-            "capital": 1090292207.0,
+            "starting location": "Asia",
+            "capital": 0,
             "used production": 0,
             "used capital": 0,
-            "urban population": 188517733,
-            "rural population": 27000000,
-            "political stability": 0,
-            "economy strength": 0,
-            "wealth number": 4,
+            "urban population": 5000000,
+            "rural population": 3000000,
+            "political stability": 50,
+            "economy strength": 50,
+            "wealth number": 0,
             "political number": 0,
-            "force number": 1,
-            "assets wealth": [
-                1,
-                2
-            ],
-            "assets political": [
-                0,
-                3,
-                4
-            ],
+            "force number": 5,
+            "assets wealth": [],
+            "assets political": [],
             "assets force": []
         }
     ]

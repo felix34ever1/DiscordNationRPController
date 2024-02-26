@@ -54,3 +54,25 @@ class AssetStore():
             return(f"Successfully created {created_asset.name}")
         else:
             return(f"Not enough resources to create {created_asset.name}")  
+    
+    def preview_assets(self,asset_type:str,type_tier:int)->str:
+        """Return a menu of available items based on predetermined user input"""
+        text = ""
+        if asset_type == "wealth":
+            for asset_name in self.wealth_assets:
+                selected_asset:asset.Asset = self.wealth_assets[asset_name]()
+                if type_tier >= selected_asset.tier:
+                    text+=f"- {asset_name}\n"
+            return text
+        elif asset_type == "political":
+            for asset_name in self.political_assets:
+                selected_asset:asset.Asset = self.political_assets[asset_name]()
+                if type_tier >= selected_asset.tier:
+                    text+=f"- {asset_name}\n"
+            return text
+        elif asset_type == "force":
+            for asset_name in self.force_assets:
+                selected_asset:asset.Asset = self.force_assets[asset_name]()
+                if type_tier >= selected_asset.tier:
+                    text+=f"- {asset_name}\n"
+            return text

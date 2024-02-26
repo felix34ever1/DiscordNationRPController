@@ -118,11 +118,8 @@ f'''
                 type_choice = (await bot.wait_for('message',check=check)).content # Get type 
 
                 if type_choice == "wealth": # Wealth assets
-                    await channel.send("__Select which asset to build:__ (Write the name)")
-                    text = ""
-                    for asset in assetStore.wealth_assets:
-                        text+=f"- {asset}\n"
-                    await channel.send(text)
+
+                    await channel.send(assetStore.preview_assets("wealth",cur_nation.wealth_number))
                     
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
                     
@@ -133,11 +130,8 @@ f'''
                         await channel.send("Unregistered Input")
                     
                 elif type_choice == "political": # Political Assets
-                    await channel.send("__Select which asset to build:__ (Write the name)")
-                    text = ""
-                    for asset in assetStore.political_assets:
-                        text+=f"- {asset}\n"
-                    await channel.send(text)
+                    
+                    await channel.send(assetStore.preview_assets("political",cur_nation.political_number))
                     
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
                     
@@ -148,11 +142,8 @@ f'''
                         await channel.send("Unregistered Input")
                 
                 elif type_choice == "force": # Force Assets
-                    await channel.send("__Select which asset to build:__ (Write the name)")
-                    text = ""
-                    for asset in assetStore.force_assets:
-                        text+=f"- {asset}\n"
-                    await channel.send(text)
+                    
+                    await channel.send(assetStore.preview_assets("force",cur_nation.force_number))
                     
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
                     

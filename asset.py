@@ -98,12 +98,13 @@ class IPP(Asset):
         super().__init__()
         self.name = "Industrial Processing Plant"
         self.type = "wealth"
+        self.tier = 1
 
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=3 and new_nation.capital>100000000:
+        if new_nation.production>=3 and new_nation.capital>100000000 and new_nation.wealth_number>=self.tier:
             return True
         return False
     
@@ -139,12 +140,13 @@ class PP(Asset):
         super().__init__()
         self.name = "Petroleum Plant"
         self.type = "wealth"
+        self.tier = 1
 
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=3 and new_nation.capital>150000000:
+        if new_nation.production>=3 and new_nation.capital>150000000 and new_nation.wealth_number>=self.tier:
             return True
         return False
 
@@ -181,12 +183,13 @@ class CI(Asset):
         super().__init__()
         self.name = "Consumer Industry"
         self.type = "wealth"
+        self.tier = 1
 
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=2 and new_nation.capital>50000000:
+        if new_nation.production>=2 and new_nation.capital>50000000 and new_nation.wealth_number>=self.tier:
             return True
         return False
 
@@ -225,12 +228,13 @@ class SA(Asset):
         super().__init__()
         self.name = "Solar Array"
         self.type = "political"
+        self.tier = 1
 
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=3 and new_nation.capital>30000000:
+        if new_nation.production>=3 and new_nation.capital>30000000 and new_nation.political_number>=self.tier:
             return True
         return False
     
@@ -265,12 +269,13 @@ class HD(Asset):
         super().__init__()
         self.name = "Hydrostation Dam"
         self.type = "political"
+        self.tier = 1
 
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=4 and new_nation.capital>100000000:
+        if new_nation.production>=4 and new_nation.capital>100000000 and new_nation.political_number>=self.tier:
             return True
         return False
     
@@ -307,12 +312,13 @@ class MI(Asset):
         super().__init__()
         self.name = "Military Industry"
         self.type = "force"
+        self.tier = 1
 
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=2 and new_nation.capital>100000000:
+        if new_nation.production>=2 and new_nation.capital>100000000 and new_nation.force_number>=self.tier:
             return True
         return False
     

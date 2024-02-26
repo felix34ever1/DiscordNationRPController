@@ -1,40 +1,5 @@
 {
     "list": [
-        {
-            "uid": 0,
-            "name": "Solar Array",
-            "type": "political",
-            "construction time": 0
-        },
-        {
-            "uid": 1,
-            "name": "Petroleum Plant",
-            "type": "wealth",
-            "construction time": 1
-        },
-        {
-            "uid": 2,
-            "name": "Petroleum Plant",
-            "type": "wealth",
-            "construction time": 1
-        },
-        {
-            "uid": 3,
-            "name": "Solar Array",
-            "type": "political",
-            "construction time": 0
-        },
-        {
-            "uid": 4,
-            "name": "Solar Array",
-            "type": "political",
-            "construction time": 0
-        },
-        {
-            "uid": 5,
-            "name": "Industrial Processing Plant",
-            "type": "wealth",
-            "construction time": 0
-        }
+
     ]
 }
