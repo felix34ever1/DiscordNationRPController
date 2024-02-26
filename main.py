@@ -32,17 +32,18 @@ def load_assets(asset_list:list):
 
 def load_nations(nation_list:list,asset_list:list):
     """Takes a list and loads it with Nation objects from the json savefile"""
-    nation_file = open("nation.json","r")
-    nation_text = nation_file.read()
-
-    imported_nations = json.loads(nation_text)
-    for nation_json in imported_nations["list"]:
-        new_nation = Nation()
-        new_nation.import_data(nation_json)
-        new_nation.hook_assets(asset_list)
-        nation_list.append(new_nation)
     
-    nation_file.close()
+    with open("nation.json","r") as nation_file:
+        nation_text = nation_file.read()
+
+        imported_nations = json.loads(nation_text)
+        for nation_json in imported_nations["list"]:
+            new_nation = Nation()
+            new_nation.import_data(nation_json)
+            new_nation.hook_assets(asset_list)
+            nation_list.append(new_nation)
+        
+        
     
 def save_assets(asset_list:list[Asset]):
     """Save assets into json file :)"""
@@ -65,14 +66,16 @@ def save_nations(nation_list: list[Nation]):
         nation_save_data = nation.export_data()
         save_data["list"].append(nation_save_data)
     save_data_json = json.dumps(save_data,indent=4) # Turns python data type to a json formatted string
-    file = open("nation.json","w") # Opens the json file
-    file.write(save_data_json) # Writes json string into the file
-    file.close()
+    with open("nation.json","w") as file:# Opens the json file
+        file.write(save_data_json) # Writes json string into the file
+    
 
 
 
-nation_list = []
+nation_list:list[Nation] = []
 asset_list = []
 
-
-
+load_assets(asset_list)
+load_nations(nation_list,asset_list)
+save_assets(asset_list)
+save_nations(nation_list)

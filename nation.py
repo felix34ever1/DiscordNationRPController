@@ -209,13 +209,19 @@ class Nation():
         if self.food<0:
             resources_deficit+= 2*self.food
 
-        self.predicted_political_stability = int(300*math.log(((self.consumer_products-resources_deficit)/50)+1)+50)
+        if self.consumer_products+resources_deficit<-15:
+            self.predicted_political_stability = 0
+        else:
+            self.predicted_political_stability = int(300*math.log(((self.consumer_products+resources_deficit)/50)+1)+50)
         
         resources_deficit = 0 #calculate economic strength
         if self.power<0:
             resources_deficit+= 2*self.power
         
-        self.predicted_economy_strength = int(300*math.log(((self.consumer_products-resources_deficit)/100)+1)+50)
+        if self.consumer_products+resources_deficit<-31:
+            self.predicted_economy_strength = 0
+        else:
+            self.predicted_economy_strength = int(300*math.log(((self.consumer_products+resources_deficit)/100)+1)+50)
 
 
         return(self.economic_report())
@@ -269,18 +275,21 @@ class Nation():
                 if asset.get_uid() == id:
                     self.assets_wealth.append(asset) # Adds the asset to its collection
                     asset.hook(self) # Tells the asset which nation it belongs to
+                    break
         # Political Assets
         for id in self.assets_political_id:
             for asset in asset_list:
                 if asset.get_uid() == id:
                     self.assets_political.append(asset) # Adds the asset to its collection
                     asset.hook(self) # Tells the asset which nation it belongs to
+                    break
         # Force Assets
-        for id in self.assets_political_id:
+        for id in self.assets_force_id:
             for asset in asset_list:
                 if asset.get_uid() == id:
-                    self.assets_political.append(asset) # Adds the asset to its collection
+                    self.assets_force.append(asset) # Adds the asset to its collection
                     asset.hook(self) # Tells the asset which nation it belongs to
+                    break
 
     def export_data(self)->dict:
         """Create a set of json exportable data"""
