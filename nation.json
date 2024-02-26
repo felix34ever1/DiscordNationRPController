@@ -5,8 +5,8 @@
             "player name": "226076978476875777",
             "starting location": "Europe",
             "capital": 0,
-            "used production": 0,
-            "used capital": 0,
+            "used production": 3,
+            "used capital": 100000000,
             "urban population": 56000000,
             "rural population": 14000000,
             "political stability": 50,
@@ -14,7 +14,9 @@
             "wealth number": 3,
             "political number": 0,
             "force number": 2,
-            "assets wealth": [],
+            "assets wealth": [
+                0
+            ],
             "assets political": [],
             "assets force": []
         }

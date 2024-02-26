@@ -117,6 +117,8 @@ class Nation():
         # Production
         self.production_raw += 2+(self.urban_population//10000000)
 
+
+
         for asset in self.assets_wealth:
             asset.production()
         for asset in self.assets_political:

@@ -3,6 +3,8 @@ import nation
 from asset import Asset
 import assethandler
 
+### Careful running as it could change asset.json or if errors, cause other problems 
+
 asset_list = []
 nation_list = []
 assetStore = assethandler.AssetStore()

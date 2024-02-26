@@ -1,7 +1,9 @@
 import asset
+import nation
 from typing import Dict
 
 def create_asset(new_asset:dict,asset_list:list):
+    """ Used for instantiating assets when they are loaded in"""
     
     # Get asset type
     if new_asset["name"] == "Industrial Processing Plant":
@@ -12,10 +14,36 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.PP()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
+    if new_asset["name"] == "Solar Array":
+        asset_object = asset.SA()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+
+
 
 class AssetStore():
     def __init__(self) -> None:
         self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP}
-        self.political_assets={}
-        self.force_assets={}
+        self.political_assets:Dict[str,function]={"Solar Array":asset.SA}
+        self.force_assets:Dict[str,function]={"Military Industry"}
         self.idpointer = 0
+
+    def buy_asset(self,asset_name:str,asset_type:str,asset_list:list,nation:nation.Nation)->str:
+        """Attempts to create a specific asset for a nation, given the nation has enough resources."""
+        
+        if asset_type == "wealth":
+            selected_asset = self.wealth_assets[asset_name]
+        elif asset_type == "political":
+            selected_asset = self.political_assets[asset_name]
+        elif asset_type == "force":
+            selected_asset = self.force_assets[asset_name]
+        created_asset:asset.Asset = selected_asset()            
+        
+        if created_asset.cost_calculation(nation): # Check if can add to nation
+            created_asset.uid = self.idpointer
+            self.idpointer+=1
+            created_asset.building_purchase(nation) 
+            asset_list.append(created_asset)
+            return(f"Successfully created {created_asset.name}")
+        else:
+            return(f"Not enough resources to create {created_asset.name}")  

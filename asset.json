@@ -1,3 +1,10 @@
 {
-    "list": []
+    "list": [
+        {
+            "uid": 0,
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
+            "construction time": 2
+        }
+    ]
 }

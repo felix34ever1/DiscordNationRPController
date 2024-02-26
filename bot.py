@@ -123,34 +123,48 @@ f'''
                     text = ""
                     for asset in assetStore.wealth_assets:
                         text+=f"- {asset}\n"
-
                     await channel.send(text)
                     
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
-
                     
-                elif type_choice == "political":
-                    pass
-                
-                elif type_choice == "force":
-                    pass 
-                
-                
-                try: # Try creating the asset
-                    selected_asset = assetStore.wealth_assets[selected_asset_text]
-                    created_asset:Asset = selected_asset()
-                    if created_asset.cost_calculation(cur_nation): # Check if can add to nation
-                        created_asset.uid = assetStore.idpointer
-                        assetStore.idpointer+=1
-                        created_asset.building_purchase(cur_nation)
-                        asset_list.append(created_asset)
-                    else:
-                        await channel.send(f"Not enough resources to create {created_asset.name}")
-
-                        
+                    try:
+                        affirmation_message = assetStore.buy_asset(selected_asset_text,"wealth",asset_list,cur_nation)
+                        await channel.send(affirmation_message)
+                    except:
+                        await channel.send("Unregistered Input")
                     
-                except:
-                    await channel.send("Unregistered input")
+                elif type_choice == "political": # Political Assets
+                    await channel.send("__Select which asset to build:__ (Write the name)")
+                    text = ""
+                    for asset in assetStore.political_assets:
+                        text+=f"- {asset}\n"
+                    await channel.send(text)
+                    
+                    selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
+                    
+                    try:
+                        affirmation_message = assetStore.buy_asset(selected_asset_text,"political",asset_list,cur_nation)
+                        await channel.send(affirmation_message)
+                    except:
+                        await channel.send("Unregistered Input")
+                
+                elif type_choice == "force": # Force Assets
+                    await channel.send("__Select which asset to build:__ (Write the name)")
+                    text = ""
+                    for asset in assetStore.force_assets:
+                        text+=f"- {asset}\n"
+                    await channel.send(text)
+                    
+                    selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
+                    
+                    try:
+                        affirmation_message = assetStore.buy_asset(selected_asset_text,"force",asset_list,cur_nation)
+                        await channel.send(affirmation_message)
+                    except:
+                        await channel.send("Unregistered Input")
+                else:
+                    await channel.send("Unregistered Type")
+
 
             elif menu_choice == 2:
                 pass # print assets and allow user to pick one
