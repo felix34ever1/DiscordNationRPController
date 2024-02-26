@@ -75,7 +75,3 @@ def save_nations(nation_list: list[Nation]):
 nation_list:list[Nation] = []
 asset_list = []
 
-load_assets(asset_list)
-load_nations(nation_list,asset_list)
-save_assets(asset_list)
-save_nations(nation_list)
