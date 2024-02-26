@@ -1,4 +1,5 @@
 ### Nation Class for holding all data on a nation.
+import math
 from typing import List
 from asset import Asset
 
@@ -28,6 +29,10 @@ class Nation():
         # Trackers
         self.political_stability = 0
         self.economy_strength = 0
+        
+        # For Calculations
+        self.predicted_political_stability = 50
+        self.predicted_economy_strength = 50
 
         # Raw resources are the total income of resources before they are used for anything.
         self.industrial_metals_raw = 0
@@ -197,8 +202,39 @@ class Nation():
             (((self.urban_population*3)+self.rural_population)*(self.political_stability/50))//6
         )
         
+
+        resources_deficit = 0 #calculate stability
+        if self.power<0:
+            resources_deficit+= 2*self.power
+        if self.food<0:
+            resources_deficit+= 2*self.food
+
+        self.predicted_political_stability = int(300*math.log(((self.consumer_products-resources_deficit)/50)+1)+50)
+        
+        resources_deficit = 0 #calculate economic strength
+        if self.power<0:
+            resources_deficit+= 2*self.power
+        
+        self.predicted_economy_strength = int(300*math.log(((self.consumer_products-resources_deficit)/100)+1)+50)
+
+
         return(self.economic_report())
 
+    def take_turn(self):
+        self.economy_prediction()
+        # Figures out resources
+        self.capital_current = self.capital
+        self.used_capital = 0
+        self.used_production = 0
+        self.political_stability = self.predicted_political_stability
+        self.economy_strength = self.predicted_economy_strength
+        # Builds any unfinished assets
+        for asset in self.assets_wealth:
+            asset.build()
+        for asset in self.assets_political:
+            asset.build()
+        for asset in self.assets_force:
+            asset.build()
 
     def import_data(self,json_data:dict): # Takes the data of a json (Now in python dict not anymore json) and loads the data
         """Using json_data, define all the variables of the nation"""
@@ -339,6 +375,8 @@ Force Assets:{force_asset_string}
         Con. Products: {self.consumer_products}
         Mil. Products: {self.military_products}
         Power: {self.power}
+        Predicted Stability: {self.predicted_political_stability}
+        Predicted Economic Strength: {self.predicted_economy_strength}
 ''')
 
         return(text)

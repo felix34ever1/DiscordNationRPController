@@ -32,7 +32,7 @@ class Asset():
         json_data["type"] = self.type
         json_data["construction time"] = self.construction_time
         return(json_data)
-    
+
     def cost_calculation(self,new_nation)->bool:
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
@@ -44,6 +44,10 @@ class Asset():
         # costs go here
         self.append_to_nation(new_nation)
 
+    def build(self):
+        """If the asset hasn't fully finished building yet, it can now build itself"""
+        if self.construction_time>0:
+            self.construction_time-=1
 
     def append_to_nation(self,new_nation):
         new_nation:nation.Nation = new_nation
@@ -152,6 +156,16 @@ class PP(Asset):
         self.construction_time = 4
         
         self.append_to_nation(new_nation)
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time == 0:
+                self.owner_nation.oil_raw+=3
+                self.owner_nation.resources_produced+=3
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
 
     def upkeep(self):
         """Called at the end of turn to calculate consumption taking the nation as a parameter"""

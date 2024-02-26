@@ -71,7 +71,6 @@ async def nationlookupall(context:commands.Context):
             for nation in nation_list:
                 await channel.send(nation.display())
 
-
     #savenations
 @bot.command()
 async def savenations(context:commands.Context):
@@ -242,7 +241,14 @@ async def nationsignup(context: commands.Context):
         await DM_target.send(f"Succesfully created {nation_name.content}, enjoy playing :)")
     except asyncio.TimeoutError:
         await DM_target.send("Timeout error. Please try again")
-
+    
+    # taketurn
+@bot.command()
+async def taketurn(context: commands.Context):
+    channel = context.channel
+    for nation in nation_list:
+        if nation.player_name == str(context.author.id):
+            nation.take_turn()
 
 @bot.event
 async def on_ready():
