@@ -197,7 +197,17 @@ f'''
                         else:
                             await channel.send(f"{chosen_asset.name} has halted working")
                     else:
-                        await channel.send(f"{chosen_asset.name} is still under construction")
+                        await channel.send(f"{chosen_asset.name} is still under construction for {chosen_asset.construction_time} turns")
+
+                    await channel.send("Delete Asset? yes/no")
+                    asset_delete_choice = (await bot.wait_for("message",check=check)).content
+
+                    if asset_delete_choice == "yes":
+                        asset_list.remove(chosen_asset)
+                        chosen_asset.delete_self()
+                        
+                        print(f"Deleted asset")
+                
 
 
             elif menu_choice == 3:

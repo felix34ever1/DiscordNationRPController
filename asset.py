@@ -64,6 +64,21 @@ class Asset():
             new_nation.assets_force_id.append(self.uid)
             new_nation.assets_force.append(self)
 
+    def delete_self(self):
+        """ Remove the asset and mention of it from anywere. """
+        if self.has_hooked:
+            if self.type == "wealth":
+                self.owner_nation.assets_wealth_id.remove(self.uid)
+                self.owner_nation.assets_wealth.remove(self)
+            elif self.type == "political":
+                self.owner_nation.assets_political_id.remove(self.uid)
+                self.owner_nation.assets_political.remove(self)
+            elif self.type == "force":
+                self.owner_nation.assets_force_id.remove(self.uid)
+                self.owner_nation.assets_force.remove(self)
+        
+        del self
+
     def secondary_production(self):
         """Checked after production to calculate if the building will be able to function, used by secondary industry"""
         if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
@@ -88,7 +103,12 @@ class Asset():
     def get_uid(self)->int:
         """Returns the Unique Identifier of the asset"""
         return(self.uid)
- 
+
+# Needed asset types: 
+# DirectedAsset (able to target both the owner nation and target nation
+# UnitGroup (holds units)
+# Unit (Acts like a unit)
+
 ######## WEALTH
 
 class IPP(Asset):

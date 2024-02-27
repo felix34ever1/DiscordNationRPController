@@ -2,8 +2,38 @@
     "list": [
         {
             "uid": 0,
-            "name": "Military Industry",
-            "type": "force",
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 1,
+            "name": "Petroleum Plant",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 2,
+            "name": "Petroleum Plant",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 3,
+            "name": "Consumer Industry",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 4,
+            "name": "Consumer Industry",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 5,
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
             "construction time": 0
         }
     ]

@@ -12,6 +12,10 @@ class Nation():
         self.player_name = "" # Discord ID
         self.starting_location = "" # Starting continent
 
+        # Turn
+        self.turn = 0
+
+
         # Spent resources this turn
         self.used_production = 0
         self.used_capital = 0
@@ -209,27 +213,30 @@ class Nation():
             (((self.urban_population*3)+self.rural_population)*(self.political_stability/50))//6
         )
         
+        if self.turn>=10:
+            resources_deficit = 0 #calculate stability
+            if self.power<0:
+                resources_deficit+= 2*self.power
+            if self.food<0:
+                resources_deficit+= 2*self.food
 
-        resources_deficit = 0 #calculate stability
-        if self.power<0:
-            resources_deficit+= 2*self.power
-        if self.food<0:
-            resources_deficit+= 2*self.food
-
-        if self.consumer_products+resources_deficit<-15:
-            self.predicted_political_stability = 0
-        else:
-            self.predicted_political_stability = int(300*math.log(((self.consumer_products+resources_deficit)/50)+1)+50)
+            if self.consumer_products+resources_deficit<-15:
+                self.predicted_political_stability = 0
+            else:
+                self.predicted_political_stability = int(300*math.log(((self.consumer_products+resources_deficit)/50)+1)+50)
+            
+            resources_deficit = 0 #calculate economic strength
+            if self.power<0:
+                resources_deficit+= 2*self.power
+            
+            if self.consumer_products+resources_deficit<-31:
+                self.predicted_economy_strength = 0
+            else:
+                self.predicted_economy_strength = int(300*math.log(((self.consumer_products+resources_deficit)/100)+1)+50)
         
-        resources_deficit = 0 #calculate economic strength
-        if self.power<0:
-            resources_deficit+= 2*self.power
-        
-        if self.consumer_products+resources_deficit<-31:
-            self.predicted_economy_strength = 0
         else:
-            self.predicted_economy_strength = int(300*math.log(((self.consumer_products+resources_deficit)/100)+1)+50)
-
+            self.predicted_economy_strength = 50
+            self.predicted_political_stability = 50
 
         return(self.economic_report())
 
@@ -254,6 +261,8 @@ class Nation():
         self.name = json_data["name"]
         self.player_name = json_data["player name"]
         self.starting_location = json_data["starting location"]
+
+        self.turn = json_data["turn"]
 
         self.capital_current = json_data["capital"]
 
@@ -307,6 +316,7 @@ class Nation():
         json_data["starting location"] = self.starting_location
 
         json_data["capital"] = self.capital_current
+        json_data["turn"] = self.turn
 
         json_data["used production"] = self.used_production
         json_data["used capital"] = self.used_capital
