@@ -208,7 +208,12 @@ class CI(Asset):
         if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
             if self.construction_time == 0 and self.owner_nation.industrial_metals_raw >= 2:
                 self.owner_nation.industrial_metals_raw -= 2
-                self.owner_nation.military_products_raw += 1
+                self.owner_nation.consumer_products_raw += 1
+                self.owner_nation.resources_spent +=2
+                self.owner_nation.resources_produced += 1
+                self.activated = True
+            else:
+                self.activated = False
         else:
             print(f"Asset {self.uid} is unhooked ")
 
@@ -339,6 +344,11 @@ class MI(Asset):
             if self.construction_time == 0 and self.owner_nation.industrial_metals_raw>=2:
                 self.owner_nation.industrial_metals_raw-=2
                 self.owner_nation.military_products_raw+=1
+                self.owner_nation.resources_spent+=2
+                self.owner_nation.resources_produced+=1
+                self.activated = True
+            else:
+                self.activated = False
         else:
             print(f"Asset {self.uid} is unhooked ")
 

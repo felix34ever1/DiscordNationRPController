@@ -4,19 +4,21 @@
             "name": "Israel",
             "player name": "226076978476875777",
             "starting location": "Asia",
-            "capital": 0,
+            "capital": 29680000.0,
             "used production": 0,
             "used capital": 0,
             "urban population": 5000000,
             "rural population": 3000000,
-            "political stability": 50,
-            "economy strength": 50,
+            "political stability": 37,
+            "economy strength": 43,
             "wealth number": 0,
             "political number": 0,
             "force number": 5,
             "assets wealth": [],
             "assets political": [],
-            "assets force": []
+            "assets force": [
+                0
+            ]
         }
     ]
 }

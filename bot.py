@@ -107,13 +107,15 @@ f'''
 3. Cancel
 ''')
             
+            nation.economy_prediction()
+
             # Decide which direction to proceed
             menu_choice = int((await bot.wait_for('message',check=check)).content)
             selected_asset_text = ""
             
             if menu_choice == 1: # Buy Asset
 
-                await channel.send("Which type of asset would you like to view? wealth/political/force")
+                await channel.send("Which type of asset would you like to purchase? wealth/political/force")
                 
                 type_choice = (await bot.wait_for('message',check=check)).content # Get type 
 
@@ -156,8 +158,48 @@ f'''
                     await channel.send("Unregistered Type")
 
 
-            elif menu_choice == 2:
-                pass # print assets and allow user to pick one
+            elif menu_choice == 2:  # print assets and allow user to pick one
+                await channel.send("Which type of asset would you like to view? wealth/political/force")
+                type_choice = (await bot.wait_for("message", check=check)).content
+                
+                text = "Please choose an asset by ID:\nID - Name\n"
+                if type_choice == "wealth":
+                    for asset in cur_nation.assets_wealth:
+                        text+=(f"{asset.uid} - {asset.name}")
+                elif type_choice == "political":
+                    for asset in cur_nation.assets_political:
+                        text+=(f"{asset.uid} - {asset.name}")
+                elif type_choice == "force":
+                    for asset in cur_nation.assets_force:
+                        text+=(f"{asset.uid} - {asset.name}")
+                await channel.send(text)
+
+                id_choice = int((await bot.wait_for('message',check=check)).content)
+
+                chosen_asset:Asset = None
+                if type_choice == "wealth":
+                    for asset in cur_nation.assets_wealth:
+                        if asset.uid == id_choice:
+                            chosen_asset = asset
+                elif type_choice == "political":
+                    for asset in cur_nation.assets_political:
+                        if asset.uid == id_choice:
+                            chosen_asset = asset
+                elif type_choice == "force":
+                    for asset in cur_nation.assets_force:
+                        if asset.uid == id_choice:
+                            chosen_asset = asset
+
+                if isinstance(chosen_asset,Asset):
+                    if chosen_asset.construction_time==0:
+                        if chosen_asset.activated:
+                            await channel.send(f"{chosen_asset.name} is working correctly")
+                        else:
+                            await channel.send(f"{chosen_asset.name} has halted working")
+                    else:
+                        await channel.send(f"{chosen_asset.name} is still under construction")
+
+
             elif menu_choice == 3:
                 await channel.send("Cancelling management")
             else:
@@ -172,11 +214,14 @@ f'''
 @bot.command()
 @commands.is_owner()
 async def shutdown(context:commands.Context):
-    print(f"shutting down at {time.ctime(time.time())}")
-    main.save_assets(asset_list)
-    print("Assets Saved")
-    main.save_nations(nation_list)
-    print("Nations Saved")
+    status_channel = bot.get_channel(1138473460868317254)
+    with open("logs.txt","a") as file:
+        main.save_assets(asset_list)
+        file.write("Assets Saved\n")
+        main.save_nations(nation_list)
+        file.write("Nations Saved\n")
+        file.write(f"shutting down at {time.ctime(time.time())}\n")
+    await status_channel.send(f"Shutting down at {time.ctime(time.time())}")
     await bot.close()
     await exit(0)
 
@@ -244,15 +289,16 @@ async def taketurn(context: commands.Context):
 @bot.event
 async def on_ready():
     status_channel = bot.get_channel(1138473460868317254)
-    main.load_assets(asset_list)
-    assetStore.idpointer = len(asset_list)
-    await status_channel.send("Asset Loading Complete")
-    main.load_nations(nation_list,asset_list)
-    await status_channel.send("Nation Loading Complete")
-    synced = await bot.tree.sync()
-    print(f"Synced {len(synced)} command(s)")
-
-#bot.run(TOKEN)
+    with open("logs.txt","a") as file:
+        main.load_assets(asset_list)
+        assetStore.idpointer = len(asset_list)
+        await status_channel.send("Asset Loading Complete")
+        file.write("Assets Loaded\n")
+        main.load_nations(nation_list,asset_list)
+        await status_channel.send("Nation Loading Complete")
+        file.write("Nations Loaded\n")
+        await status_channel.send(f"Bot finished initialising at {time.ctime(time.time())}")
+        file.write(f"Bot finished initialising at {time.ctime(time.time())}\n")
 
 if __name__ == "__main__":
   asyncio.run(runner(bot))

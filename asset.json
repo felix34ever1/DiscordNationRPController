@@ -1,5 +1,10 @@
 {
     "list": [
-
+        {
+            "uid": 0,
+            "name": "Military Industry",
+            "type": "force",
+            "construction time": 0
+        }
     ]
 }

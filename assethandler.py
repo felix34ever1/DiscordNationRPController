@@ -26,6 +26,10 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.HD()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
+    elif new_asset["name"] == "Military Industry":
+        asset_object = asset.MI()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
 
 
 class AssetStore():

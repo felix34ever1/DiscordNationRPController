@@ -15,14 +15,4 @@ new_nation.capital_current = 300000000
 
 main.load_assets(asset_list)
 assetStore.idpointer = len(asset_list)
-
-selected_asset = assetStore.wealth_assets["Industrial Processing Plant"]
-created_asset:Asset = selected_asset()
-if created_asset.cost_calculation(new_nation): # Check if can add to nation
-    created_asset.uid = assetStore.idpointer
-    assetStore.idpointer+=1
-    created_asset.append_to_nation(new_nation)
-    asset_list.append(created_asset)
-
-
-main.save_assets(asset_list)
+main.load_nations(nation_list,asset_list)

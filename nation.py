@@ -131,6 +131,13 @@ class Nation():
         for asset in self.assets_force:
             asset.production()
 
+        for asset in self.assets_wealth:
+            asset.secondary_production()
+        for asset in self.assets_political:
+            asset.secondary_production()
+        for asset in self.assets_force:
+            asset.secondary_production()
+
         self.capital = self.capital_raw - self.used_capital
         self.industrial_metals = self.industrial_metals_raw
         self.rare_metals = self.rare_metals_raw
