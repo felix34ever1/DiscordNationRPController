@@ -65,7 +65,7 @@ class Asset():
             new_nation.assets_force.append(self)
 
     def delete_self(self):
-        """ Remove the asset and mention of it from anywere. """
+        """ Remove the asset and mention of it from anywhere. """
         if self.has_hooked:
             if self.type == "wealth":
                 self.owner_nation.assets_wealth_id.remove(self.uid)
@@ -103,6 +103,29 @@ class Asset():
     def get_uid(self)->int:
         """Returns the Unique Identifier of the asset"""
         return(self.uid)
+
+class Ability(Asset):
+
+    def __init__(self,asset_list:list=[]):
+        super().__init__()
+        self.asset_list = asset_list
+
+    def delete_self_removelink(self):
+        """ Remove the asset and mention of it from anywhere, as an ability, it can remove itself from the asset_list when needed. """
+        if self.has_hooked:
+            if self.type == "wealth":
+                self.owner_nation.assets_wealth_id.remove(self.uid)
+                self.owner_nation.assets_wealth.remove(self)
+            elif self.type == "political":
+                self.owner_nation.assets_political_id.remove(self.uid)
+                self.owner_nation.assets_political.remove(self)
+            elif self.type == "force":
+                self.owner_nation.assets_force_id.remove(self.uid)
+                self.owner_nation.assets_force.remove(self)
+
+        self.asset_list.remove(self)
+        
+        del self
 
 # Needed asset types: 
 # DirectedAsset (able to target both the owner nation and target nation
@@ -328,6 +351,49 @@ class HD(Asset):
                 self.owner_nation.power_raw+=5
         else:
             print(f"Asset {self.uid} is unhooked ")
+
+class LP(Ability):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "Labour Programme"
+        self.type = "political"
+        self.tier = 1
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.capital>100000000 and new_nation.political_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_capital+=100000000
+        self.construction_time = 1
+        
+        self.append_to_nation(new_nation)
+
+    def upkeep(self):
+        """Called at the end of turn to calculate consumption taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time > 0:
+                self.owner_nation.production_raw+=1
+            elif self.construction_time == 0:
+                self.delete_self_removelink()
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
 
 ######## FORCE
 

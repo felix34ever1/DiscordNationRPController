@@ -35,6 +35,18 @@
             "name": "Industrial Processing Plant",
             "type": "wealth",
             "construction time": 0
+        },
+        {
+            "uid": 6,
+            "name": "Labour Programme",
+            "type": "political",
+            "construction time": 0
+        },
+        {
+            "uid": 7,
+            "name": "Petroleum Plant",
+            "type": "wealth",
+            "construction time": 0
         }
     ]
 }

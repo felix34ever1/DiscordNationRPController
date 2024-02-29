@@ -30,12 +30,16 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.MI()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
+    elif new_asset["name"] == "Labour Programme":
+        asset_object = asset.LP()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
 
 
 class AssetStore():
     def __init__(self) -> None:
         self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP,"Commercial Industry":asset.CI}
-        self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD}
+        self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD,"Labour Programme":asset.LP}
         self.force_assets:Dict[str,function]={"Military Industry":asset.MI}
         self.idpointer = 0
 

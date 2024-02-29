@@ -1,6 +1,6 @@
 import main
 import nation
-from asset import Asset
+import asset
 import assethandler
 
 ### Careful running as it could change asset.json or if errors, cause other problems 
@@ -16,3 +16,4 @@ new_nation.capital_current = 300000000
 main.load_assets(asset_list)
 assetStore.idpointer = len(asset_list)
 main.load_nations(nation_list,asset_list)
+a = asset.LP()
