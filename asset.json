@@ -1,12 +1,6 @@
 {
     "list": [
         {
-            "uid": 0,
-            "name": "Industrial Processing Plant",
-            "type": "wealth",
-            "construction time": 0
-        },
-        {
             "uid": 1,
             "name": "Petroleum Plant",
             "type": "wealth",
@@ -47,6 +41,24 @@
             "name": "Petroleum Plant",
             "type": "wealth",
             "construction time": 0
+        },
+        {
+            "uid": 0,
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 8,
+            "name": "Labour Programme",
+            "type": "political",
+            "construction time": 0
+        },
+        {
+            "uid": 10,
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
+            "construction time": 1
         }
     ]
 }

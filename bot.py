@@ -16,7 +16,7 @@ TOKEN = os.getenv("TOKEN")
 # Non Bot Stuff
 nation_list: list[Nation] = []
 asset_list: list[Asset] = []
-assetStore = assethandler.AssetStore()
+assetStore = assethandler.AssetStore(asset_list)
 
 # Bot Stuff
 bot_intentions = discord.Intents.default() # Intents objects allowing a discord bot to do certain things.
@@ -126,7 +126,7 @@ f'''
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
                     
                     try:
-                        affirmation_message = assetStore.buy_asset(selected_asset_text,"wealth",asset_list,cur_nation)
+                        affirmation_message = assetStore.buy_asset(selected_asset_text,"wealth",cur_nation)
                         await channel.send(affirmation_message)
                     except:
                         await channel.send("Unregistered Input")
@@ -138,7 +138,7 @@ f'''
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
                     
                     try:
-                        affirmation_message = assetStore.buy_asset(selected_asset_text,"political",asset_list,cur_nation)
+                        affirmation_message = assetStore.buy_asset(selected_asset_text,"political",cur_nation)
                         await channel.send(affirmation_message)
                     except:
                         await channel.send("Unregistered Input")
@@ -150,7 +150,7 @@ f'''
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
                     
                     try:
-                        affirmation_message = assetStore.buy_asset(selected_asset_text,"force",asset_list,cur_nation)
+                        affirmation_message = assetStore.buy_asset(selected_asset_text,"force",cur_nation)
                         await channel.send(affirmation_message)
                     except:
                         await channel.send("Unregistered Input")
@@ -301,7 +301,7 @@ async def on_ready():
     status_channel = bot.get_channel(1138473460868317254)
     with open("logs.txt","a") as file:
         main.load_assets(asset_list)
-        assetStore.idpointer = len(asset_list)
+        assetStore.nextID()
         await status_channel.send("Asset Loading Complete")
         file.write("Assets Loaded\n")
         main.load_nations(nation_list,asset_list)

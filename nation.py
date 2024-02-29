@@ -256,6 +256,8 @@ class Nation():
         for asset in self.assets_force:
             asset.build()
 
+        self.economy_prediction()
+
     def import_data(self,json_data:dict): # Takes the data of a json (Now in python dict not anymore json) and loads the data
         """Using json_data, define all the variables of the nation"""
         self.name = json_data["name"]
