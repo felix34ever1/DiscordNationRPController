@@ -233,10 +233,19 @@ class Nation():
                 self.predicted_economy_strength = 0
             else:
                 self.predicted_economy_strength = int(300*math.log(((self.consumer_products+resources_deficit)/100)+1)+50)
-        
+
+            for asset in self.assets_wealth:
+                asset.alter_nation_metrics()
+            for asset in self.assets_political:
+                asset.alter_nation_metrics()
+            for asset in self.assets_force:
+                asset.alter_nation_metrics()
+
+
         else:
             self.predicted_economy_strength = 50
             self.predicted_political_stability = 50
+
 
         return(self.economic_report())
 

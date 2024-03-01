@@ -99,6 +99,13 @@ class Asset():
             pass
         else:
             print(f"Asset {self.uid} is unhooked ")
+    
+    def alter_nation_metrics(self):
+        """Called to change stability or economic strength of nation"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")
 
     def get_uid(self)->int:
         """Returns the Unique Identifier of the asset"""
@@ -613,6 +620,108 @@ class MI(Asset):
                 self.activated = True
             else:
                 self.activated = False
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+class MES(Asset):
+    def __init__(self):
+        """ Creates an Manual Extraction Site Asset."""
+        super().__init__()
+        self.name = "Manual Extraction Site"
+        self.type = "force"
+        self.tier = 2
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.production>=1 and new_nation.capital>25000000 and new_nation.wealth_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_production+=1
+        new_nation.used_capital+=25000000
+        self.construction_time = 2
+        
+        self.append_to_nation(new_nation)
+
+    def secondary_production(self):
+        """Checked after production to calculate if the building will be able to function, used by secondary industry"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time == 0:
+                pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            self.owner_nation.rare_metals_raw += 1
+            self.owner_nation.resources_produced += 1
+        else:
+            print(f"Asset {self.uid} is unhooked ")     
+
+    def alter_nation_metrics(self):
+        """Called to change stability or economic strength of nation"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            self.owner_nation.predicted_political_stability-=2
+            if self.owner_nation.predicted_political_stability<0:
+                self.owner_nation.predicted_political_stability=0
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+class MOES(Asset):
+    def __init__(self):
+        """ Creates an Manual Oil Extraction Site Asset."""
+        super().__init__()
+        self.name = "Manual Oil Extraction Site"
+        self.type = "force"
+        self.tier = 2
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.production>=1 and new_nation.capital>50000000 and new_nation.wealth_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_production+=1
+        new_nation.used_capital+=50000000
+        self.construction_time = 2
+        
+        self.append_to_nation(new_nation)
+
+    def secondary_production(self):
+        """Checked after production to calculate if the building will be able to function, used by secondary industry"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time == 0:
+                pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            self.owner_nation.oil_raw += 1
+            self.owner_nation.resources_produced += 1
+        else:
+            print(f"Asset {self.uid} is unhooked ")     
+
+    def alter_nation_metrics(self):
+        """Called to change stability or economic strength of nation"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            self.owner_nation.predicted_political_stability-=2
+            if self.owner_nation.predicted_political_stability<0:
+                self.owner_nation.predicted_political_stability=0
         else:
             print(f"Asset {self.uid} is unhooked ")
 
