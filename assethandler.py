@@ -6,6 +6,8 @@ def create_asset(new_asset:dict,asset_list:list):
     """ Used for instantiating assets when they are loaded in"""
     
     # Get asset type
+
+    # Wealth
     if new_asset["name"] == "Industrial Processing Plant":
         asset_object = asset.IPP()
         asset_object.load_asset(new_asset)
@@ -18,6 +20,23 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.CI()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
+    elif new_asset["name"] == "Rare Metals Refinery":
+        asset_object = asset.RMR()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+    elif new_asset["name"] == "Synthetic Plastic Plant":
+        asset_object = asset.SPP()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+    elif new_asset["name"] == "Electronics Hub":
+        asset_object = asset.EH()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+    elif new_asset["name"] == "Civilian Development":
+        asset_object = asset.CD()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+    # Political
     elif new_asset["name"] == "Solar Array":
         asset_object = asset.SA()
         asset_object.load_asset(new_asset)
@@ -26,21 +45,25 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.HD()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
-    elif new_asset["name"] == "Military Industry":
-        asset_object = asset.MI()
-        asset_object.load_asset(new_asset)
-        asset_list.append(asset_object)
     elif new_asset["name"] == "Labour Programme":
         asset_object = asset.LP()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
+    # Force
+    elif new_asset["name"] == "Military Industry":
+        asset_object = asset.MI()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
+
+        
 
 
 class AssetStore():
     def __init__(self,asset_list:list[asset.Asset]) -> None:
         self.asset_list = asset_list
-        self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP,"Commercial Industry":asset.CI}
-        self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD,"Labour Programme":asset.LP}
+        self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP,"Commercial Industry":asset.CI,
+                                               "Rare Metals Refinery":asset.RMR,"Synthetic Plastic Plant":asset.SPP,"Electronics Hub":asset.EH}
+        self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD,"Labour Programme":asset.LP,"Civilian Development":asset.CD}
         self.force_assets:Dict[str,function]={"Military Industry":asset.MI}
         self.idpointer = -1
 

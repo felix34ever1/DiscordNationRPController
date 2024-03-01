@@ -165,13 +165,13 @@ f'''
                 text = "Please choose an asset by ID:\nID - Name\n"
                 if type_choice == "wealth":
                     for asset in cur_nation.assets_wealth:
-                        text+=(f"{asset.uid} - {asset.name}")
+                        text+=(f"{asset.uid} - {asset.name}\n")
                 elif type_choice == "political":
                     for asset in cur_nation.assets_political:
-                        text+=(f"{asset.uid} - {asset.name}")
+                        text+=(f"{asset.uid} - {asset.name}\n")
                 elif type_choice == "force":
                     for asset in cur_nation.assets_force:
-                        text+=(f"{asset.uid} - {asset.name}")
+                        text+=(f"{asset.uid} - {asset.name}\n")
                 await channel.send(text)
 
                 id_choice = int((await bot.wait_for('message',check=check)).content)

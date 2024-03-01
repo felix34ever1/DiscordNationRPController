@@ -268,6 +268,184 @@ class CI(Asset):
         else:
             print(f"Asset {self.uid} is unhooked ")
 
+class RMR(Asset):
+    def __init__(self):
+        """ Creates a Rare Metals Refinery Asset."""
+        super().__init__()
+        self.name = "Rare Metals Refinery"
+        self.type = "wealth"
+        self.tier = 2
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.production>=3 and new_nation.capital>200000000 and new_nation.wealth_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_production+=3
+        new_nation.used_capital+=200000000
+        self.construction_time = 3
+        
+        self.append_to_nation(new_nation)
+
+    def secondary_production(self):
+        """Checked after production to calculate if the building will be able to function, used by secondary industry"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time == 0:
+                self.owner_nation.rare_metals_raw+=3
+                self.owner_nation.resources_produced+=3
+        else:
+            print(f"Asset {self.uid} is unhooked ")    
+
+class SPP(Asset):
+    def __init__(self):
+        """ Creates a Synthetic Plastic Plant Asset."""
+        super().__init__()
+        self.name = "Synthetic Plastic Plant"
+        self.type = "wealth"
+        self.tier = 2
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.production>=2 and new_nation.capital>200000000 and new_nation.wealth_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_production+=2
+        new_nation.used_capital+=200000000
+        self.construction_time = 2
+        
+        self.append_to_nation(new_nation)
+
+    def secondary_production(self):
+        """Checked after production to calculate if the building will be able to function, used by secondary industry"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.owner_nation.oil_raw>=2:
+                self.owner_nation.oil_raw-=2
+                self.owner_nation.plastics_raw+=1
+                self.owner_nation.resources_produced+=2
+                self.owner_nation.resources_spent+=1
+            else:
+                self.activated = False
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+class EH(Asset):
+    def __init__(self):
+        """ Creates an Electronics Hub Asset."""
+        super().__init__()
+        self.name = "Electronics Hub"
+        self.type = "wealth"
+        self.tier = 2
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.production>=4 and new_nation.capital>400000000 and new_nation.wealth_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_production+=4
+        new_nation.used_capital+=400000000
+        self.construction_time = 6
+        
+        self.append_to_nation(new_nation)
+
+    def secondary_production(self):
+        """Checked after production to calculate if the building will be able to function, used by secondary industry"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time == 0:
+                if self.owner_nation.rare_metals_raw>=2:
+                    self.owner_nation.electronics_raw+=2
+                    self.owner_nation.rare_metals_raw-=2
+                    self.owner_nation.resources_produced+=2
+                    self.owner_nation.resources_spent+=2
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")    
+
+class CD(Asset):
+    def __init__(self):
+        """ Creates an Civilian Development Asset."""
+        super().__init__()
+        self.name = "Civilian Development"
+        self.type = "wealth"
+        self.tier = 2
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.production>=2 and new_nation.capital>80000000 and new_nation.wealth_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_production+=2
+        new_nation.used_capital+=80000000
+        self.construction_time = 2
+        
+        self.append_to_nation(new_nation)
+
+    def secondary_production(self):
+        """Checked after production to calculate if the building will be able to function, used by secondary industry"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time == 0:
+                if self.owner_nation.plastics_raw>=1:
+                    self.owner_nation.plastics_raw-=1
+                    self.owner_nation.consumer_products_raw+=3
+                    self.owner_nation.resources_spent+=1
+                    self.owner_nation.resources_produced+=3
+
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
+    def production(self):
+        """Called at beginning of turn to calculate surplus taking the nation as a parameter"""
+        if type(self.owner_nation) == nation.Nation: # Checks that the asset is hooked
+            pass
+        else:
+            print(f"Asset {self.uid} is unhooked ")      
 ######## POLITICAL
 
 class SA(Asset):
