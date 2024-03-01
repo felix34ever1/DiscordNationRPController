@@ -58,7 +58,43 @@
             "uid": 10,
             "name": "Industrial Processing Plant",
             "type": "wealth",
-            "construction time": 1
+            "construction time": 0
+        },
+        {
+            "uid": 11,
+            "name": "Hydrostation Dam",
+            "type": "political",
+            "construction time": 0
+        },
+        {
+            "uid": 12,
+            "name": "Military Industry",
+            "type": "force",
+            "construction time": 0
+        },
+        {
+            "uid": 13,
+            "name": "Rare Metals Refinery",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 14,
+            "name": "Consumer Industry",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 15,
+            "name": "Rare Metals Refinery",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 16,
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
+            "construction time": 0
         }
     ]
 }

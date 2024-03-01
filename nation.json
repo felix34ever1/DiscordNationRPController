@@ -4,7 +4,7 @@
             "name": "The Islamic Republic of Iran",
             "player name": "549995061136326666",
             "starting location": "Asia",
-            "capital": 2012499990.0,
+            "capital": 3096999984.0,
             "turn": 0,
             "used production": 0,
             "used capital": 0,
@@ -20,16 +20,24 @@
                 2,
                 3,
                 4,
-                5
+                5,
+                13,
+                14,
+                15,
+                16
             ],
-            "assets political": [],
-            "assets force": []
+            "assets political": [
+                11
+            ],
+            "assets force": [
+                12
+            ]
         },
         {
             "name": "Iraeli Supreme War Council",
             "player name": "226076978476875777",
             "starting location": "Asia",
-            "capital": 54666636.0,
+            "capital": 155666628.0,
             "turn": 0,
             "used production": 0,
             "used capital": 0,

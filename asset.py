@@ -1,5 +1,10 @@
 ### Asset class, <<<<Maybe>>>> all Asset subclasses are contained within the economy, political or force script. 
 
+# Needed asset types: 
+# DirectedAsset (able to target both the owner nation and target nation)
+# UnitGroup (holds units)
+# Unit (Acts like a unit)
+
 class Asset():
 
     def __init__(self):
@@ -111,6 +116,98 @@ class Asset():
         """Returns the Unique Identifier of the asset"""
         return(self.uid)
 
+class DirectedAsset(Asset):
+    def __init__(self):
+        """Creates an Asset, this is the parent class for all assets and assets should set their own cost_calculation, building_purchase, upkeep and production functions if needed"""
+        self.uid = -1 # Unique Identifier
+        self.name = "" # Name of the asset e.g refinery or bank etc.
+        self.type = "" # Wealth, Political or Force
+        self.tier = 1 # How high the country has to have a level in the type 
+        self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+        
+        self.owner_nation = None # Will be assigned when it is hooked by the nation.
+        self.target_nation = None # Assigned to targeted nation by the directed asset.
+        self.target_nation_id = "" # ID of the target nation
+        self.has_hooked = False
+
+    def hook(self,hooking_nation):
+        """Take a nation that is hooking to asset and try to decide if """
+        hooking_nation:nation.Nation = hooking_nation
+        if hooking_nation.player_name == self.target_nation_id: # check if hooking nation is target or owner
+            self.target_nation = hooking_nation
+        else:
+           self.owner_nation:nation.Nation = hooking_nation
+        self.has_hooked = True
+
+    def building_purchase(self,new_nation,target_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        # costs go here
+        self.append_to_nation(new_nation,target_nation)
+
+    def load_asset(self,json_data:dict):
+        """ Takes json data in the form of a dictionary and loads its properties from there"""
+        self.uid = json_data["uid"]
+        self.name = json_data["name"]
+        self.type = json_data["type"]
+        self.construction_time = json_data["construction time"]
+        self.target_nation_id = json_data["target nation id"]
+
+    def export_asset(self)->dict:
+        """Turn the asset into json data to be exported, returns a dictionary"""
+        json_data = {}
+        json_data["uid"] = self.uid
+        json_data["name"] = self.name
+        json_data["type"] = self.type
+        json_data["construction time"] = self.construction_time
+        json_data["target nation id"] = self.target_nation_id
+        return(json_data)
+
+    def append_to_nation(self,new_nation,target_nation):
+        new_nation:nation.Nation = new_nation
+        target_nation:nation.Nation = target_nation
+        self.owner_nation = new_nation
+        self.target_nation = target_nation
+        self.target_nation_id = self.target_nation.player_name
+        self.hook(new_nation)
+        if self.type == "wealth":
+            new_nation.assets_wealth_id.append(self.uid)
+            new_nation.assets_wealth.append(self)
+            target_nation.assets_wealth_id.append(self.uid)
+            target_nation.assets_wealth.append(self)
+        elif self.type == "political":
+            new_nation.assets_political_id.append(self.uid)
+            new_nation.assets_political.append(self)
+            target_nation.assets_political_id.append(self.uid)
+            target_nation.assets_political.append(self)
+        elif self.type == "force":
+            new_nation.assets_force_id.append(self.uid)
+            new_nation.assets_force.append(self)
+            target_nation.assets_force_id.append(self.uid)
+            target_nation.assets_force.append(self)
+
+    def delete_self(self):
+        """ Remove the asset and mention of it from anywhere. """
+        if self.has_hooked:
+            if self.type == "wealth":
+                self.owner_nation.assets_wealth_id.remove(self.uid)
+                self.owner_nation.assets_wealth.remove(self)
+                self.target_nation.assets_wealth_id.remove(self.uid)
+                self.target_nation.assets_wealth.remove(self)
+            elif self.type == "political":
+                self.owner_nation.assets_political_id.remove(self.uid)
+                self.owner_nation.assets_political.remove(self)
+                self.target_nation.assets_political_id.remove(self.uid)
+                self.target_nation.assets_political.remove(self)
+            elif self.type == "force":
+                self.owner_nation.assets_force_id.remove(self.uid)
+                self.owner_nation.assets_force.remove(self)
+                self.target_nation.assets_force_id.remove(self.uid)
+                self.target_nation.assets_force.remove(self)
+        
+        del self
+
 class Ability(Asset):
 
     def __init__(self,asset_list:list=[]):
@@ -134,10 +231,48 @@ class Ability(Asset):
         
         del self
 
-# Needed asset types: 
-# DirectedAsset (able to target both the owner nation and target nation
-# UnitGroup (holds units)
-# Unit (Acts like a unit)
+class DirectedAbility(DirectedAsset):
+    def __init__(self,asset_list:list=[]):
+        """Creates an Asset, this is the parent class for all assets and assets should set their own cost_calculation, building_purchase, upkeep and production functions if needed"""
+        self.uid = -1 # Unique Identifier
+        self.name = "" # Name of the asset e.g refinery or bank etc.
+        self.type = "" # Wealth, Political or Force
+        self.tier = 1 # How high the country has to have a level in the type 
+        self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+        
+        self.asset_list = asset_list
+
+        self.owner_nation = None # Will be assigned when it is hooked by the nation.
+        self.target_nation = None # Assigned to targeted nation by the directed asset.
+        self.target_nation_id = "" # ID of the target nation
+        self.has_hooked = False
+
+    def delete_self_removelink(self):
+        """ Remove the asset and mention of it from anywhere, as an ability, it can remove itself from the asset_list when needed. """
+        if self.has_hooked:
+            self.owner_nation:nation.Nation
+            self.target_nation:nation.Nation
+            if self.type == "wealth":
+                self.owner_nation.assets_wealth_id.remove(self.uid)
+                self.owner_nation.assets_wealth.remove(self)
+                self.target_nation.assets_wealth_id.remove(self.uid)
+                self.target_nation.assets_wealth.remove(self)
+            elif self.type == "political":
+                self.owner_nation.assets_political_id.remove(self.uid)
+                self.owner_nation.assets_political.remove(self)
+                self.target_nation.assets_political_id.remove(self.uid)
+                self.target_nation.assets_political.remove(self)
+            elif self.type == "force":
+                self.owner_nation.assets_force_id.remove(self.uid)
+                self.owner_nation.assets_force.remove(self)
+                self.target_nation.assets_force_id.remove(self.uid)
+                self.target_nation.assets_force.remove(self)
+
+        self.asset_list.remove(self)
+        
+        del self
+
 
 ######## WEALTH
 
@@ -579,6 +714,51 @@ class LP(Ability):
         else:
             print(f"Asset {self.uid} is unhooked ")
 
+class SP(DirectedAbility):
+    def __init__(self,asset_list:list=[]):
+        """Created a Subversive Politics, an ability"""
+        self.uid = -1 # Unique Identifier
+        self.name = "Subversive Politics" # Name of the asset e.g refinery or bank etc.
+        self.type = "political" # Wealth, Political or Force
+        self.tier = 2 # How high the country has to have a level in the type 
+        self.construction_time = 1 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+        
+        self.asset_list = asset_list
+
+        self.owner_nation = None # Will be assigned when it is hooked by the nation.
+        self.target_nation = None # Assigned to targeted nation by the directed asset.
+        self.target_nation_id = "" # ID of the target nation
+        self.has_hooked = False    
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        new_nation.economy_prediction()
+        if new_nation.capital>100000000 and new_nation.political_number>=self.tier:
+            return True
+        return False
+    
+    def building_purchase(self,new_nation,target_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        
+        new_nation.used_capital+=100000000
+        self.construction_time = 1
+        
+        self.append_to_nation(new_nation,target_nation)
+
+    def production(self):
+        """Called at the end of turn to calculate consumption"""
+        if type(self.target_nation) == nation.Nation: # Checks that the asset is hooked
+            if self.construction_time > 0:
+                self.target_nation.production_raw+=1
+            elif self.construction_time == 0:
+                self.delete_self_removelink()
+            
+        else:
+            print(f"Asset {self.uid} is unhooked ")
+
 
 ######## FORCE
 
@@ -635,7 +815,7 @@ class MES(Asset):
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=1 and new_nation.capital>25000000 and new_nation.wealth_number>=self.tier:
+        if new_nation.production>=1 and new_nation.capital>25000000 and new_nation.force_number>=self.tier:
             return True
         return False
     
@@ -686,7 +866,7 @@ class MOES(Asset):
         """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
         new_nation:nation.Nation = new_nation
         new_nation.economy_prediction()
-        if new_nation.production>=1 and new_nation.capital>50000000 and new_nation.wealth_number>=self.tier:
+        if new_nation.production>=1 and new_nation.capital>50000000 and new_nation.force_number>=self.tier:
             return True
         return False
     

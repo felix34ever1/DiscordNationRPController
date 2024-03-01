@@ -16,7 +16,7 @@ TOKEN = os.getenv("TOKEN")
 # Non Bot Stuff
 nation_list: list[Nation] = []
 asset_list: list[Asset] = []
-assetStore = assethandler.AssetStore(asset_list)
+assetStore = assethandler.AssetStore(asset_list,nation_list)
 
 # Bot Stuff
 bot_intentions = discord.Intents.default() # Intents objects allowing a discord bot to do certain things.
@@ -104,7 +104,8 @@ f'''
 {cur_nation.name} Management - Please choose
 1. Acquire new assets
 2. Manage assets
-3. Cancel
+3. Trade
+4. Cancel
 ''')
             
             nation.economy_prediction()
@@ -119,41 +120,32 @@ f'''
                 
                 type_choice = (await bot.wait_for('message',check=check)).content # Get type 
 
-                if type_choice == "wealth": # Wealth assets
+                if type_choice == "wealth" or type_choice == "political" or type_choice == "force": # Wealth assets
 
-                    await channel.send(assetStore.preview_assets("wealth",cur_nation.wealth_number))
+                    await channel.send(assetStore.preview_assets(type_choice,cur_nation.get_attribute(type_choice)))
                     
                     selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
-                    
+
                     try:
-                        affirmation_message = assetStore.buy_asset(selected_asset_text,"wealth",cur_nation)
+                        asset_directed = assetStore.get_asset_directed(selected_asset_text,type_choice)
+                        
+                        if asset_directed == "directed":
+                            nation_text = "__Pick Target Nation by number:__\n"
+                            for nation in nation_list:
+                                nation_text+=f"- {nation_list.index(nation)} - {nation.name}\n"
+                            await channel.send(nation_text)
+                            input_nation = int((await bot.wait_for("message",check=check)).content)
+                            if input_nation < len(nation_list) and input_nation>=0:
+                                target_nation = nation_list[input_nation]
+                                affirmation_message = assetStore.buy_directed_asset(selected_asset_text,type_choice,cur_nation,target_nation)
+                            else:
+                                affirmation_message = "Nation you chose is out of bounds"
+                        else:
+                            affirmation_message = assetStore.buy_asset(selected_asset_text,type_choice,cur_nation)
                         await channel.send(affirmation_message)
                     except:
                         await channel.send("Unregistered Input")
                     
-                elif type_choice == "political": # Political Assets
-                    
-                    await channel.send(assetStore.preview_assets("political",cur_nation.political_number))
-                    
-                    selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
-                    
-                    try:
-                        affirmation_message = assetStore.buy_asset(selected_asset_text,"political",cur_nation)
-                        await channel.send(affirmation_message)
-                    except:
-                        await channel.send("Unregistered Input")
-                
-                elif type_choice == "force": # Force Assets
-                    
-                    await channel.send(assetStore.preview_assets("force",cur_nation.force_number))
-                    
-                    selected_asset_text = ((await bot.wait_for('message',check=check)).content.title())
-                    
-                    try:
-                        affirmation_message = assetStore.buy_asset(selected_asset_text,"force",cur_nation)
-                        await channel.send(affirmation_message)
-                    except:
-                        await channel.send("Unregistered Input")
                 else:
                     await channel.send("Unregistered Type")
 
@@ -310,5 +302,9 @@ async def on_ready():
         await status_channel.send(f"Bot finished initialising at {time.ctime(time.time())}")
         file.write(f"Bot finished initialising at {time.ctime(time.time())}\n")
 
-if __name__ == "__main__":
-  asyncio.run(runner(bot))
+
+
+#if __name__ == "__main__":
+#  asyncio.run(runner(bot))
+
+bot.run(TOKEN)

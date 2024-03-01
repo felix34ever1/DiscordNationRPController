@@ -318,6 +318,16 @@ class Nation():
                     asset.hook(self) # Tells the asset which nation it belongs to
                     break
 
+    def get_attribute(self,type)->int:
+        if type == "wealth":
+            return self.wealth_number
+        elif type == "political":
+            return self.political_number
+        elif type == "force":
+            return self.force_number
+        else:
+            return 0
+
     def export_data(self)->dict:
         """Create a set of json exportable data"""
         json_data = {}
