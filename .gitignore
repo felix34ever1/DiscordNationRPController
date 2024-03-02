@@ -160,3 +160,7 @@ cython_debug/
 #.idea/
 
 # Important critical files
+weblaunch.py
+logs.txt
+nation.json
+asset.json
