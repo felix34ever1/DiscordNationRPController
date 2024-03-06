@@ -289,3 +289,12 @@ Bot finished initialising at Fri Mar  1 20:36:51 2024
 Assets Saved
 Nations Saved
 shutting down at Fri Mar  1 20:37:06 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Mon Mar  4 19:27:04 2024
+Assets Saved
+Nations Saved
+shutting down at Mon Mar  4 20:28:33 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Mon Mar  4 22:35:09 2024
