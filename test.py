@@ -52,22 +52,24 @@ unitgroup2.unit_list.append(inf5)
 unitgroup2.unit_list.append(inf6)
 unitgroup3 = asset.UnitGroup()
 unitgroup3.supporting = True
-unitgroup3.allied_unit_group = unitgroup1
+unitgroup3.allied_unit_group = unitgroup2
+unitgroup2.enemy_unit_group = unitgroup1
 unitgroup3.unit_list.append(planes1)
 unitgroup3.unit_list.append(planes2)
 
 
-unitgroup1.enemy_unit_group = unitgroup2
+unitgroup1.enemy_unit_group = unitgroup3
 unitgroup1.fight_type = "pairup"
 unitgroup3.fight_type = "pairup"
-unitgroup1.attack()
+#unitgroup3.fight_length = 5
+#unitgroup1.attack()
 unitgroup3.support()
 
 for unit in unit_list:
     print(unit.display())
 
-unitgroup1.attack()
 unitgroup3.support()
+#unitgroup3.support()
 
 print("--------------------------")
 for unit in unit_list:

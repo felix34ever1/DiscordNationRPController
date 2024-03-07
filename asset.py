@@ -291,7 +291,8 @@ class UnitGroup(DirectedAsset):
         self.tier = 1 # How high the country has to have a level in the type 
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
         self.activated = True
-
+        
+        self.fought_this_turn = False # Each unit group should only attack once
         self.supporting:int = False # Used to decide if this does attack function or support function. Supporting assets don't take direct damage or have an auxilliary idea, e.g CAS/recon. Should not be given to units like infantry or tanks or ships unless ships are performing coastal bombardment.
         self.fight_length:int = 1 # This determines how long a fight lasts each turn. 
         self.fight_type:str = "pairup" # Type:
@@ -309,85 +310,92 @@ class UnitGroup(DirectedAsset):
         self.target_nation_id = "" # ID of the target nation
         self.has_hooked = False
 
-    def attack(self)->str:
-        if self.enemy_unit_group != None: # Check there are units in the enemy group
-            enemy_units:list[Unit] = []
-            enemy_units = (self.enemy_unit_group.unit_list).copy() # Shallow copies the lists so that elements can be removed for pairing purposes
-            unit_list = self.unit_list.copy()
+    def attack(self)->int:
+        if self.enemy_unit_group != None and not self.fought_this_turn: # Check there are units in the enemy group
+            for _ in range(self.fight_length):
+                enemy_units:list[Unit] = []
+                enemy_units = (self.enemy_unit_group.unit_list).copy() # Shallow copies the lists so that elements can be removed for pairing purposes
+                unit_list = self.unit_list.copy()
 
-            # Go through each unit and select an opponent
-            if self.fight_type == "pairup":
-                for unit in unit_list:  
-                    # First check if the unit is already locked with a valid unit, if so, remove valid unit from list
-                    if unit.locked_unit != None:
-                        if unit.locked_unit in enemy_units: # Remove enemy unit from list
-                            enemy_units.remove(unit.locked_unit)
+                # Go through each unit and select an opponent
+                if self.fight_type == "pairup":
+                    for unit in unit_list:  
+                        # First check if the unit is already locked with a valid unit, if so, remove valid unit from list
+                        if unit.locked_unit != None:
+                            if unit.locked_unit in enemy_units: # Remove enemy unit from list
+                                enemy_units.remove(unit.locked_unit)
+                            else:
+                                unit.locked_unit = None
+                        
+                    for unit in unit_list:  # Now actually select the opponent if not already got one
+                        if len(enemy_units) == 0 or unit.locked_unit != None: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
+                                break
                         else:
-                            unit.locked_unit = None
+                            unit_index = random.randint(0,len(enemy_units)-1)
+                            unit.locked_unit = enemy_units.pop(unit_index)
+                            unit.locked_unit.locked_unit = unit
+
+                    for unit in self.unit_list: 
+                        # Loops through each unit and resolves attacks, for both the unit and the unit it is engaged to.
+                        if unit.locked_unit != None:
+                            enemy_unit = unit.locked_unit
+                            if unit.recon_bonus>enemy_unit.recon_bonus:
+                                if unit.check_battlespace(enemy_unit):
+                                    unit.attack(enemy_unit)
+                                if enemy_unit.check_battlespace(unit):
+                                    enemy_unit.attack(unit)
+                            else:
+                                if enemy_unit.check_battlespace(unit):
+                                    enemy_unit.attack(unit)
+                                if unit.check_battlespace(enemy_unit):
+                                    unit.attack(enemy_unit)
+
+                    self.fought_this_turn = True
+                    self.enemy_unit_group.fought_this_turn = True
+
+                elif self.fight_type == "randomall":
+                    for unit in unit_list: 
+                        if len(enemy_units) == 0: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
+                                break
+                        else:
+                            unit_index = random.randint(0,len(enemy_units)-1)
+                            unit.locked_unit = enemy_units[unit_index]
                     
-                for unit in unit_list:  # Now actually select the opponent if not already got one
-                    if len(enemy_units) == 0 or unit.locked_unit != None: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
-                            break
-                    else:
-                        unit_index = random.randint(0,len(enemy_units)-1)
-                        unit.locked_unit = enemy_units.pop(unit_index)
-                        unit.locked_unit.locked_unit = unit
-
-                for unit in self.unit_list: 
-                    # Loops through each unit and resolves attacks, for both the unit and the unit it is engaged to.
-                    if unit.locked_unit != None:
-                        enemy_unit = unit.locked_unit
-                        if unit.recon_bonus>enemy_unit.recon_bonus:
-                            if unit.check_battlespace(enemy_unit):
-                                unit.attack(enemy_unit)
-                            if enemy_unit.check_battlespace(unit):
-                                enemy_unit.attack(unit)
+                    for enemy in enemy_units: 
+                        if len(enemy_units) == 0: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
+                                break
                         else:
-                            if enemy_unit.check_battlespace(unit):
-                                enemy_unit.attack(unit)
-                            if unit.check_battlespace(enemy_unit):
-                                unit.attack(enemy_unit)
-            
-            elif self.fight_type == "randomall":
-                for unit in unit_list: 
-                    if len(enemy_units) == 0: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
-                            break
-                    else:
-                        unit_index = random.randint(0,len(enemy_units)-1)
-                        unit.locked_unit = enemy_units[unit_index]
-                
-                for enemy in enemy_units: 
-                    if len(enemy_units) == 0: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
-                            break
-                    else:
-                        unit_index = random.randint(0,len(unit_list)-1)
-                        enemy.locked_unit = unit_list[unit_index]
+                            unit_index = random.randint(0,len(unit_list)-1)
+                            enemy.locked_unit = unit_list[unit_index]
 
-            unit_attack_queue:list[Unit] = [] # Used for determining unit order, if a unit has better recon than its opponent, it executes, otherwise it is added to this list to be executed after
+                    unit_attack_queue:list[Unit] = [] # Used for determining unit order, if a unit has better recon than its opponent, it executes, otherwise it is added to this list to be executed after
 
-            for unit in unit_list:
-                if unit.recon_bonus > unit.locked_unit.recon_bonus:
-                    if unit.check_battlespace(unit.locked_unit):
-                        unit.attack(unit.locked_unit)
-                else:
-                    unit_attack_queue.append(unit)
-            
-            for unit in enemy_units:
-                if unit.recon_bonus > unit.locked_unit.recon_bonus:
-                    if unit.check_battlespace(unit.locked_unit):
-                        unit.attack(unit.locked_unit)
-                else:
-                    unit_attack_queue.append(unit)
-            
-            for unit in unit_attack_queue:
-                if unit.check_battlespace(unit.locked_unit):
-                    unit.attack(unit.locked_unit)
-                
+                    for unit in unit_list:
+                        if unit.recon_bonus > unit.locked_unit.recon_bonus:
+                            if unit.check_battlespace(unit.locked_unit):
+                                unit.attack(unit.locked_unit)
+                        else:
+                            unit_attack_queue.append(unit)
+                    
+                    for unit in enemy_units:
+                        if unit.recon_bonus > unit.locked_unit.recon_bonus:
+                            if unit.check_battlespace(unit.locked_unit):
+                                unit.attack(unit.locked_unit)
+                        else:
+                            unit_attack_queue.append(unit)
+                    
+                    for unit in unit_attack_queue:
+                        if unit.check_battlespace(unit.locked_unit):
+                            unit.attack(unit.locked_unit)
+
+                    self.fought_this_turn = True
+                    self.enemy_unit_group.fought_this_turn = True
+    
         else:
             return len(self.unit_list) # Else return the number of units as a sort of occupation amount
 
     def support(self):
-        if self.allied_unit_group != None:
+        if self.allied_unit_group != None and not self.fought_this_turn:
         # Check if the attached unit group has an enemy
             if self.allied_unit_group.enemy_unit_group != None:
                 enemy_unit_group = self.allied_unit_group.enemy_unit_group
@@ -405,6 +413,7 @@ class UnitGroup(DirectedAsset):
                         else:
                             unit_index = random.randint(0,len(enemy_units)-1)
                             unit.locked_unit = enemy_units.pop(unit_index)
+                            
                 elif self.fight_type == "randomall":
                     for unit in unit_list:
                         if len(enemy_units) == 0:
@@ -417,6 +426,8 @@ class UnitGroup(DirectedAsset):
                     if unit.locked_unit!=None:
                         if unit.check_battlespace(unit.locked_unit):
                             unit.attack(unit.locked_unit)
+
+                self.fought_this_turn = True
 
 class Unit(Asset):
     def __init__(self):
