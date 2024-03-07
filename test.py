@@ -40,6 +40,12 @@ planes1.nickname = "1st Royal Wings"
 planes2 = asset.TacticalWing()
 planes2.nickname = "2nd Royal Wings"
 
+bombs = asset.Weapon()
+bombs.damage_soft = 5.0
+bombs.possible_battlespaces.append("ground")
+planes1.weapon_list.append(bombs)
+bombs.owner_unit = planes1
+
 unit_list:list[asset.Unit] = [inf,inf2,inf3,inf4,inf5,inf6,planes1,planes2]
 
 unitgroup1 = asset.UnitGroup()
@@ -68,10 +74,4 @@ unitgroup3.support()
 for unit in unit_list:
     print(unit.display())
 
-unitgroup3.support()
-#unitgroup3.support()
-
-print("--------------------------")
-for unit in unit_list:
-    print(unit.display())
 

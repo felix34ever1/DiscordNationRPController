@@ -317,9 +317,18 @@ class UnitGroup(DirectedAsset):
                 enemy_units = (self.enemy_unit_group.unit_list).copy() # Shallow copies the lists so that elements can be removed for pairing purposes
                 unit_list = self.unit_list.copy()
 
+                # Weapons are gathered
+                allied_weapons:list[Weapon] = []
+                enemy_weapons:list[Weapon] = []
+                for unit in unit_list:
+                    allied_weapons += unit.weapon_list
+                for enemy in enemy_units:
+                    enemy_weapons += enemy.weapon_list
+
+
                 # Go through each unit and select an opponent
                 if self.fight_type == "pairup":
-                    for unit in unit_list:  
+                    for unit in unit_list:
                         # First check if the unit is already locked with a valid unit, if so, remove valid unit from list
                         if unit.locked_unit != None:
                             if unit.locked_unit in enemy_units: # Remove enemy unit from list
@@ -329,7 +338,7 @@ class UnitGroup(DirectedAsset):
                         
                     for unit in unit_list:  # Now actually select the opponent if not already got one
                         if len(enemy_units) == 0 or unit.locked_unit != None: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
-                                break
+                                pass
                         else:
                             unit_index = random.randint(0,len(enemy_units)-1)
                             unit.locked_unit = enemy_units.pop(unit_index)
@@ -342,13 +351,25 @@ class UnitGroup(DirectedAsset):
                             if unit.recon_bonus>enemy_unit.recon_bonus:
                                 if unit.check_battlespace(enemy_unit):
                                     unit.attack(enemy_unit)
+                                    for weapon in unit.weapon_list:
+                                        if weapon.check_battlespace(enemy_unit):
+                                            weapon.attack(enemy_unit)
                                 if enemy_unit.check_battlespace(unit):
                                     enemy_unit.attack(unit)
+                                    for weapon in enemy_unit.weapon_list:
+                                        if weapon.check_battlespace(unit):
+                                            weapon.attack(unit)
                             else:
                                 if enemy_unit.check_battlespace(unit):
                                     enemy_unit.attack(unit)
+                                    for weapon in enemy_unit.weapon_list:
+                                        if weapon.check_battlespace(unit):
+                                            weapon.attack(unit)
                                 if unit.check_battlespace(enemy_unit):
                                     unit.attack(enemy_unit)
+                                    for weapon in unit.weapon_list:
+                                        if weapon.check_battlespace(enemy_unit):
+                                            weapon.attack(enemy_unit)
 
                     self.fought_this_turn = True
                     self.enemy_unit_group.fought_this_turn = True
@@ -374,19 +395,37 @@ class UnitGroup(DirectedAsset):
                         if unit.recon_bonus > unit.locked_unit.recon_bonus:
                             if unit.check_battlespace(unit.locked_unit):
                                 unit.attack(unit.locked_unit)
+                            for weapon in unit.weapon_list:
+                                unit_index = random.randint(0,len(enemy_units)-1)
+                                enemy = enemy_units[unit_index]
+                                if weapon.check_battlespace(enemy):
+                                    weapon.attack(enemy)
                         else:
                             unit_attack_queue.append(unit)
                     
                     for unit in enemy_units:
-                        if unit.recon_bonus > unit.locked_unit.recon_bonus:
+                        if unit.recon_bonus >= unit.locked_unit.recon_bonus:
                             if unit.check_battlespace(unit.locked_unit):
                                 unit.attack(unit.locked_unit)
+                            for weapon in unit.weapon_list:
+                                unit_index = random.randint(0,len(unit_list)-1)
+                                enemy = unit_list[unit_index]
+                                if weapon.check_battlespace(enemy):
+                                    weapon.attack(enemy)
                         else:
                             unit_attack_queue.append(unit)
                     
                     for unit in unit_attack_queue:
                         if unit.check_battlespace(unit.locked_unit):
                             unit.attack(unit.locked_unit)
+                        for weapon in unit.weapon_list:
+                            unit_index = random.randint(0,len(unit_list)-1)
+                            if unit in unit_list:
+                                enemy = enemy_units[unit_index]
+                            elif unit in enemy_units:
+                                enemy = unit_list[unit_index]
+                            if weapon.check_battlespace(enemy):
+                                weapon.attack(enemy)
 
                     self.fought_this_turn = True
                     self.enemy_unit_group.fought_this_turn = True
@@ -413,6 +452,7 @@ class UnitGroup(DirectedAsset):
                         else:
                             unit_index = random.randint(0,len(enemy_units)-1)
                             unit.locked_unit = enemy_units.pop(unit_index)
+
                             
                 elif self.fight_type == "randomall":
                     for unit in unit_list:
@@ -426,6 +466,16 @@ class UnitGroup(DirectedAsset):
                     if unit.locked_unit!=None:
                         if unit.check_battlespace(unit.locked_unit):
                             unit.attack(unit.locked_unit)
+                            if self.fight_type == "pairup":
+                                for weapon in unit.weapon_list:
+                                    if weapon.check_battlespace(unit.locked_unit):
+                                        weapon.attack(unit.locked_unit)
+                            elif self.fight_type == "randomall":
+                                for weapon in unit.weapon_list:
+                                    unit_index = random.randint(0,len(enemy_units)-1)
+                                    enemy = enemy_units[unit_index]
+                                    if weapon.check_battlespace(enemy):
+                                        weapon.attack(enemy)
 
                 self.fought_this_turn = True
 
@@ -439,6 +489,7 @@ class Unit(Asset):
         self.battlespace:str = ""
         self.possible_battlespaces:list[str] = [] # Possible attack target battlespaces
         self.battlespace_list:list[str] = [] # a list holding all of the battlespaces that the unit counts as being in.
+        self.weapon_list:list[Weapon] = [] # Stores all weapons available to the unit
         self.tier = 1 # How high the country has to have a level in the type 
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
         self.activated = True
@@ -565,6 +616,87 @@ HULL: {self.hull_health_current}/{self.hull_health_max}
             text+=f"Engaged: {self.locked_unit.nickname}"
         return text
 
+class Weapon(Asset):
+    def __init__(self):
+        """Creates a Weapon, it describes a subweapon or weapon group that can fire independently of a unit. They cannot be destroyed unless the owner unit is destroyed"""
+        self.uid = -1 # Unique Identifier
+        self.name = "" # Name of the unit e.g refinery or bank etc.
+        self.type = "" # Wealth, Political or Force
+        self.battlespace:str = ""
+        self.possible_battlespaces:list[str] = [] # Possible attack target battlespaces
+        self.tier = 1 # How high the country has to have a level in the type 
+        self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+
+
+        # Unit Attacks
+        self.damage_soft = 0.0 # Damage it deals to unarmoured ground units
+        self.damage_hard = 0.0 # Damage it deals to armoured ground units
+
+        self.air_attack = 0.0 # Damage dealt to air units.
+
+        self.naval_damage = 0.0 # Damage it deals to naval assets.
+        self.naval_ap = 0.0 # How much naval armour it can pierce.
+        
+        self.orbital_attack = False # Determines if it can perform an orbital attack. All orbital attacks 1 hit kill enemy orbital units
+        
+        self.cyber_offense = 0.0 # Has to be higher than defender cyber defence.
+        
+        self.covert_ops_score = 0.0 # Determines if a unit succeeds a covert attack.
+
+        self.recon_bonus = 0.0 # Used to determine if it attacks first
+
+        self.owner_unit:Unit = None # Will be assigned when it is hooked by the unit.
+        self.has_hooked = False
+
+    def check_battlespace(self,enemy)->bool:
+        enemy:Unit = enemy
+        if enemy.battlespace in self.possible_battlespaces:
+            return True
+        else:
+            return False
+
+    def attack(self,enemy_unit)->bool:
+        enemy_unit:Unit = enemy_unit
+
+        if enemy_unit.battlespace == "ground":
+            damagesoft = self.damage_soft*(self.owner_unit.morale_current/self.owner_unit.morale_max) - enemy_unit.armour
+            if damagesoft<0:
+                damagesoft = 0
+            damagehard = self.damage_hard*(self.owner_unit.morale_current/self.owner_unit.morale_max)
+            if damagehard>enemy_unit.armour:
+                damagehard = enemy_unit.armour
+            enemy_unit.morale_current -= damagesoft+damagehard
+        
+        elif enemy_unit.battlespace == "air":
+            enemy_unit.air_integrity_current -= self.air_attack*(1-enemy_unit.dodge)
+        
+        elif enemy_unit.battlespace == "naval":
+            if enemy_unit.naval_armour<=self.naval_ap:
+                enemy_unit.hull_health_current-=self.naval_damage
+
+        elif enemy_unit.battlespace == "space" and self.orbital_attack:
+            if random.random() > enemy_unit.orbital_defence:
+                enemy_unit.kill_self()
+                return True
+            else:
+                return False
+        
+        elif enemy_unit.battlespace == "cyber":
+            if self.cyber_offense > enemy_unit.cyber_defence:
+                return True
+            else:
+                return False
+        
+        elif enemy_unit.battlespace == "covert": # Possibly consider adding a critical failure condition
+            if self.covert_ops_score > enemy_unit.intelligence:
+                if self.covert_ops_score > enemy_unit.intelligence+5:
+                    return True
+                else:
+                    self.owner_unit.morale_current-=enemy_unit.damage_soft*(enemy_unit.morale_current/enemy_unit.morale_max)
+                    return True
+            else:
+                return False
 
 ######## WEALTH
 
@@ -1208,6 +1340,7 @@ class InfantryBrigade(Unit):
         self.battlespace:str = "ground"
         self.possible_battlespaces:list[str] = ["ground"] # To attack
         self.battlespace_list:list[str] = ["ground"] # a list holding all of the battlespaces that the unit counts as being in.
+        self.weapon_list:list[Weapon] = [] # Stores all weapons available to the unit
         self.tier = 1 # How high the country has to have a level in the type 
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
         self.activated = True
@@ -1264,6 +1397,7 @@ class TacticalWing(Unit):
         self.battlespace:str = "air"
         self.possible_battlespaces:list[str] = ["air","ground"]
         self.battlespace_list:list[str] = ["air"] # a list holding all of the battlespaces that the unit counts as being in.
+        self.weapon_list:list[Weapon] = [] # Stores all weapons available to the unit        
         self.tier = 1 # How high the country has to have a level in the type 
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
         self.activated = True
