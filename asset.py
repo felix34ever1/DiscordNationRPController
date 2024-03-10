@@ -287,9 +287,13 @@ class UnitGroup(DirectedAsset):
         """Creates a unit group, can store a target unit or target nation but does not need it assigned. """
         self.uid = -1 # Unique Identifier
         self.name = "" # Name of the asset e.g refinery or bank etc.
+        self.nickname = "" # Name assignable by player
         self.type = "" # Wealth, Political or Force
         self.tier = 1 # How high the country has to have a level in the type 
+        self.battlespaces:list[str] = [] # Type of units that can be kept in this group, usually just one type
+        self.attackable_battlespaces:list[str] = [] # types of units that can be 
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
+        self.asset_list:list[Asset] = None
         self.activated = True
         
         self.fought_this_turn = False # Each unit group should only attack once
@@ -299,16 +303,55 @@ class UnitGroup(DirectedAsset):
         #- pairup(each unit pairs up with an enemy, unpaired units don't attack but increase advantage),
         #- randomall(all units randomly pick an enemy unit to attack, multiple units can pick the same) 
 
-        self.attack_type = ""
+        self.attack_type = "" # used for figuring out how the they find the enemy
         self.unit_list:list[Unit] = []
         self.unit_id_list:list[int] = []
         self.enemy_unit_group:UnitGroup = None
+        self.enemy_unit_group_id:int = None
         self.allied_unit_group:UnitGroup = None
+        self.allied_unit_group_id:int = None
 
         self.owner_nation = None # Will be assigned when it is hooked by the nation.
         self.target_nation = None # Assigned to targeted nation by the directed asset.
         self.target_nation_id = "" # ID of the target nation
         self.has_hooked = False
+
+    def append_to_nation(self,new_nation,target_nation):
+        new_nation:nation.Nation = new_nation
+        target_nation:nation.Nation = target_nation
+        self.owner_nation = new_nation
+        self.target_nation = target_nation
+        self.target_nation_id = self.target_nation.player_name
+        self.hook(new_nation)
+        if self.type == "wealth":
+            new_nation.assets_wealth_id.append(self.uid)
+            new_nation.assets_wealth.append(self)
+            target_nation.assets_wealth_id.append(self.uid)
+            target_nation.assets_wealth.append(self)
+        elif self.type == "political":
+            new_nation.assets_political_id.append(self.uid)
+            new_nation.assets_political.append(self)
+            target_nation.assets_political_id.append(self.uid)
+            target_nation.assets_political.append(self)
+        elif self.type == "force":
+            new_nation.assets_force_id.append(self.uid)
+            new_nation.assets_force.append(self)
+            target_nation.assets_force_id.append(self.uid)
+            target_nation.assets_force.append(self)
+
+    def append_to_nation(self,new_nation):
+        new_nation:nation.Nation = new_nation
+        self.owner_nation = new_nation
+        self.hook(new_nation)
+        if self.type == "wealth":
+            new_nation.assets_wealth_id.append(self.uid)
+            new_nation.assets_wealth.append(self)
+        elif self.type == "political":
+            new_nation.assets_political_id.append(self.uid)
+            new_nation.assets_political.append(self)
+        elif self.type == "force":
+            new_nation.assets_force_id.append(self.uid)
+            new_nation.assets_force.append(self)
 
     def attack(self)->int:
         if self.enemy_unit_group != None and not self.fought_this_turn: # Check there are units in the enemy group
@@ -478,6 +521,55 @@ class UnitGroup(DirectedAsset):
                                         weapon.attack(enemy)
 
                 self.fought_this_turn = True
+
+    def check_enemy_group(self,enemy_group):
+        """checks if it can attack the given enemy group"""
+        enemy_group:UnitGroup = enemy_group
+        for battlespace in enemy_group.battlespaces:
+            if battlespace in self.attackable_battlespaces:
+                return True
+        return False       
+
+    def attack_enemy_group(self,enemy_group):
+        enemy_group:UnitGroup
+        """Adds an enemy group as its locked group, enemy group should be checked beforehand"""
+        pass
+
+    def check_unit(self,unit):
+        """check if a unit can be added""" 
+        unit:Unit = unit
+        for battlespace in unit.battlespace_list:
+            if battlespace in self.battlespaces:
+                unit.battlespace = battlespace
+                return True
+        return False
+
+    def add_unit(self):
+        unit:Unit = unit
+        """Add a unit object to itself, unit should be verified first"""
+        pass
+
+    def load_asset(self,json_data:dict):
+        """ Takes json data in the form of a dictionary and loads its properties from there"""
+        self.uid = json_data["uid"]
+        self.name = json_data["name"]
+        self.type = json_data["type"]
+        self.construction_time = json_data["construction time"]
+        self.target_nation_id = json_data["target nation id"]
+
+    def export_asset(self)->dict:
+        """Turn the asset into json data to be exported, returns a dictionary"""
+        json_data = {}
+        json_data["uid"] = self.uid
+        json_data["name"] = self.name
+        json_data["type"] = self.type
+        json_data["construction time"] = self.construction_time
+        json_data["target nation id"] = self.target_nation_id
+        json_data["unit id list"] = self.unit_id_list
+        json_data["nickname"] = self.nickname
+        json_data["enemy unit group id"] = self.enemy_unit_group_id
+        json_data["allied unit group id"] = self.allied_unit_group_id
+        return(json_data)
 
 class Unit(Asset):
     def __init__(self):
@@ -1330,6 +1422,53 @@ class MOES(Asset):
         else:
             print(f"Asset {self.uid} is unhooked ")
 
+class TraditionalArmy(UnitGroup):
+    def __init__(self):
+        """Creates a unit group, can store a target unit or target nation but does not need it assigned. """
+        self.uid = -1 # Unique Identifier
+        self.name = "Traditional Army" # Name of the asset e.g refinery or bank etc.
+        self.nickname = "" # Name assignable by player
+        self.type = "force" # Wealth, Political or Force
+        self.tier = 1 # How high the country has to have a level in the type 
+        self.battlespaces:list[str] = ["ground"] # Type of units that can be kept in this group, usually just one type
+        self.attackable_battlespaces:list[str] = ["ground"] # types of units that can be 
+        self.construction_time = 1 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+        
+        self.fought_this_turn = False # Each unit group should only attack once
+        self.supporting:int = False # Used to decide if this does attack function or support function. Supporting assets don't take direct damage or have an auxilliary idea, e.g CAS/recon. Should not be given to units like infantry or tanks or ships unless ships are performing coastal bombardment.
+        self.fight_length:int = 1 # This determines how long a fight lasts each turn. 
+        self.fight_type:str = "pairup" # Type:
+        #- pairup(each unit pairs up with an enemy, unpaired units don't attack but increase advantage),
+        #- randomall(all units randomly pick an enemy unit to attack, multiple units can pick the same) 
+
+        self.attack_type = "" # used for figuring out how the they find the enemy
+        self.unit_list:list[Unit] = []
+        self.unit_id_list:list[int] = []
+        self.enemy_unit_group:UnitGroup = None
+        self.enemy_unit_group_id:int = None
+        self.allied_unit_group:UnitGroup = None
+        self.allied_unit_group_id:int = None
+
+        self.owner_nation = None # Will be assigned when it is hooked by the nation.
+        self.target_nation = None # Assigned to targeted nation by the directed asset.
+        self.target_nation_id = "" # ID of the target nation
+        self.has_hooked = False   
+
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        if new_nation.production>=2 and new_nation.capital>=100000000:
+            return True
+        return False
+
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        new_nation.used_production+=2
+        new_nation.used_capital+=100000000
+        self.append_to_nation(new_nation)
+
 class InfantryBrigade(Unit):
     def __init__(self):
         """Creates an infantry brigade."""
@@ -1389,7 +1528,7 @@ class InfantryBrigade(Unit):
 
 class TacticalWing(Unit):
     def __init__(self):
-        """Creates a Unit, usually a military group able to engage in combat. It will contain many properties based off of what it can do."""
+        """Creates a tactical wing"""
         self.uid = -1 # Unique Identifier
         self.name = "Tactical Wing" # Name of the unit e.g refinery or bank etc.
         self.nickname = "" # Player assigned name
@@ -1444,4 +1583,119 @@ class TacticalWing(Unit):
 
         self.owner_nation = None # Will be assigned when it is hooked by the nation.
         self.has_hooked = False
+
+class Destroyer(Unit):
+    def __init__(self):
+        """Creates a destroyer."""
+        self.uid = -1 # Unique Identifier
+        self.name = "Destroyer" # Name of the unit e.g refinery or bank etc.
+        self.nickname = "" # Player assigned name
+        self.type = "force" # Wealth, Political or Force
+        self.battlespace:str = "naval"
+        self.possible_battlespaces:list[str] = ["naval"] # To attack
+        self.battlespace_list:list[str] = ["naval","air"] # a list holding all of the battlespaces that the unit counts as being in.
+        self.weapon_list:list[Weapon] = [] # Stores all weapons available to the unit
+        self.tier = 1 # How high the country has to have a level in the type 
+        self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+        
+        ## Unit stats
+        self.locked_unit:Unit = None
+        self.compels_reaction:bool = False # This tells if the unit makes the enemy attack it.
+        # Unit Defences
+        self.morale_max = 1.0 # The maximum amount of morale for a ground unit as well as cover ops units.
+        self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit
+        self.morale_current = self.morale_max
+
+        self.dodge = 0.0 # Used by air units to avoid damage, incoming damage is timed by 1 - dodge. e.g dodge 0.1 reduces damage by 10%  
+        self.air_integrity_max = 0.0 # Air health
+        self.air_integrity_current = self.air_integrity_max #
+        
+        self.hull_health_max = 20.0 # Health of ships, does not reduce effectiveness of ship as it gets reduced
+        self.naval_armour = 3.0 # Used to prevent damage from attacks. Otherwise doesn't reduce anything. 
+        self.hull_health_current = self.hull_health_max
+
+        self.orbital_defence = 0.0 # Used as a chance to avoid an attack.
+
+        self.cyber_defence = 0.0 # Used to negate cyberattacks, if summed larger than cyber attacks, then it will negate it
+
+        self.intelligence = 0.0 # Used to negate covert attacks.
+
+        # Unit Attacks
+        self.damage_soft = 0.0 # Damage it deals to unarmoured ground units
+        self.damage_hard = 0.0 # Damage it deals to armoured ground units
+
+        self.air_attack = 0.0 # Damage dealt to air units.
+
+        self.naval_damage = 0.0 # Damage it deals to naval assets.
+        self.naval_ap = 0.0 # How much naval armour it can pierce.
+        
+        self.orbital_attack = False # Determines if it can perform an orbital attack. All orbital attacks 1 hit kill enemy orbital units
+        
+        self.cyber_offense = 0.0 # Has to be higher than defender cyber defence.
+        
+        self.covert_ops_score = 0.0 # Determines if a unit succeeds a covert attack.
+
+        self.recon_bonus = 0.0 # Used to determine if it attacks first
+
+        self.owner_nation = None # Will be assigned when it is hooked by the nation.
+        self.has_hooked = False
+
+class Cruiser(Unit):
+    def __init__(self):
+        """Creates a cruiser."""
+        self.uid = -1 # Unique Identifier
+        self.name = "Cruiser" # Name of the unit e.g refinery or bank etc.
+        self.nickname = "" # Player assigned name
+        self.type = "force" # Wealth, Political or Force
+        self.battlespace:str = "naval"
+        self.possible_battlespaces:list[str] = ["naval"] # To attack
+        self.battlespace_list:list[str] = ["naval"] # a list holding all of the battlespaces that the unit counts as being in.
+        self.weapon_list:list[Weapon] = [] # Stores all weapons available to the unit
+        self.tier = 1 # How high the country has to have a level in the type 
+        self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
+        self.activated = True
+        
+        ## Unit stats
+        self.locked_unit:Unit = None
+        self.compels_reaction:bool = False # This tells if the unit makes the enemy attack it.
+        # Unit Defences
+        self.morale_max = 1.0 # The maximum amount of morale for a ground unit as well as cover ops units.
+        self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit
+        self.morale_current = self.morale_max
+
+        self.dodge = 0.0 # Used by air units to avoid damage, incoming damage is timed by 1 - dodge. e.g dodge 0.1 reduces damage by 10%  
+        self.air_integrity_max = 0.0 # Air health
+        self.air_integrity_current = self.air_integrity_max #
+        
+        self.hull_health_max = 60.0 # Health of ships, does not reduce effectiveness of ship as it gets reduced
+        self.naval_armour = 5.0 # Used to prevent damage from attacks. Otherwise doesn't reduce anything. 
+        self.hull_health_current = self.hull_health_max
+
+        self.orbital_defence = 0.0 # Used as a chance to avoid an attack.
+
+        self.cyber_defence = 0.0 # Used to negate cyberattacks, if summed larger than cyber attacks, then it will negate it
+
+        self.intelligence = 0.0 # Used to negate covert attacks.
+
+        # Unit Attacks
+        self.damage_soft = 0.0 # Damage it deals to unarmoured ground units
+        self.damage_hard = 0.0 # Damage it deals to armoured ground units
+
+        self.air_attack = 0.0 # Damage dealt to air units.
+
+        self.naval_damage = 0.0 # Damage it deals to naval assets.
+        self.naval_ap = 0.0 # How much naval armour it can pierce.
+        
+        self.orbital_attack = False # Determines if it can perform an orbital attack. All orbital attacks 1 hit kill enemy orbital units
+        
+        self.cyber_offense = 0.0 # Has to be higher than defender cyber defence.
+        
+        self.covert_ops_score = 0.0 # Determines if a unit succeeds a covert attack.
+
+        self.recon_bonus = 0.0 # Used to determine if it attacks first
+
+        self.owner_nation = None # Will be assigned when it is hooked by the nation.
+        self.has_hooked = False
+
 import nation

@@ -37,7 +37,7 @@
             "name": "Iraeli Supreme War Council",
             "player name": "226076978476875777",
             "starting location": "Asia",
-            "capital": 155666628.0,
+            "capital": 10333294.0,
             "turn": 0,
             "used production": 0,
             "used capital": 0,
@@ -54,7 +54,9 @@
                 10
             ],
             "assets political": [],
-            "assets force": []
+            "assets force": [
+                17
+            ]
         }
     ]
 }

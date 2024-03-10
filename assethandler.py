@@ -68,7 +68,11 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object = asset.MOES()
         asset_object.load_asset(new_asset)
         asset_list.append(asset_object)
-        
+    elif new_asset["name"] == "Traditional Army":
+        asset_object = asset.TraditionalArmy()
+        asset_object.load_asset(new_asset)
+        asset_object.asset_list = asset_list
+        asset_list.append(asset_object)
 
 
 class AssetStore():
@@ -78,7 +82,7 @@ class AssetStore():
         self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP,"Consumer Industry":asset.CI,
                                                "Rare Metals Refinery":asset.RMR,"Synthetic Plastic Plant":asset.SPP,"Electronics Hub":asset.EH}
         self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD,"Labour Programme":asset.LP,"Civilian Development":asset.CD,"Subversive Politics":asset.SP}
-        self.force_assets:Dict[str,function]={"Military Industry":asset.MI,
+        self.force_assets:Dict[str,function]={"Military Industry":asset.MI,"Traditional Army":asset.TraditionalArmy,
                                               "Manual Extraction Site":asset.MES,"Manual Oil Extraction Site":asset.MOES}
         self.idpointer = -1
 
@@ -93,7 +97,7 @@ class AssetStore():
             selected_asset = self.force_assets[asset_name]
         # create the asset function based on the type of asset:
         created_asset = selected_asset()
-        if isinstance(created_asset,asset.DirectedAsset): # If directed, you must choose a nation too
+        if isinstance(created_asset,asset.DirectedAsset) and not isinstance(created_asset,asset.UnitGroup): # Returns if directed.
             return("directed")
         else:
             return("undirected")
@@ -138,6 +142,7 @@ class AssetStore():
         
         # create the asset function based on the type of asset:
         created_asset:asset.DirectedAsset = selected_asset()
+        # Assign asset list to directed assets.
         if isinstance(created_asset,asset.DirectedAbility):
             created_asset.asset_list = self.asset_list
         elif isinstance(created_asset,asset.Asset):

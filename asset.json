@@ -95,6 +95,17 @@
             "name": "Industrial Processing Plant",
             "type": "wealth",
             "construction time": 0
+        },
+        {
+            "uid": 17,
+            "name": "Traditional Army",
+            "type": "force",
+            "construction time": 0,
+            "target nation id": "",
+            "unit id list": [],
+            "nickname": "",
+            "enemy unit group id": null,
+            "allied unit group id": null
         }
     ]
 }
