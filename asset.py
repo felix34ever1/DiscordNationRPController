@@ -1,5 +1,7 @@
 import random
 import copy
+import discord
+from discord.ext import commands
 ### Asset class, <<<<Maybe>>>> all Asset subclasses are contained within the economy, political or force script. 
 
 # Needed asset types: 
@@ -119,6 +121,11 @@ class Asset():
     def get_uid(self)->int:
         """Returns the Unique Identifier of the asset"""
         return(self.uid)
+
+    async def manage(self,bot:commands.Bot,channel:discord.TextChannel, author: discord.User)-> None:
+        """Allows the asset to be managed in some way. Directly being able to take the bot and use it."""
+        await channel.send("a")
+        
 
 class DirectedAsset(Asset):
     def __init__(self):
@@ -556,6 +563,10 @@ class UnitGroup(DirectedAsset):
         self.type = json_data["type"]
         self.construction_time = json_data["construction time"]
         self.target_nation_id = json_data["target nation id"]
+        self.unit_id_list = json_data["unit id list"]
+        self.nickname = json_data["nickname"]
+        self.enemy_unit_group_id = json_data["enemy unit group id"]
+        self.allied_unit_group_id = json_data["allied unit group id"]
 
     def export_asset(self)->dict:
         """Turn the asset into json data to be exported, returns a dictionary"""
@@ -588,8 +599,14 @@ class Unit(Asset):
         
         ## Unit stats
         self.locked_unit:Unit = None
+        self.locked_unit_id:int = None
         self.compels_reaction:bool = False # This tells if the unit makes the enemy attack it.
         
+        # Supply stats, need to be integrated later
+        self.max_supply = 1.0 
+        self.supply_current = 1.0
+        self.supply_use = 0.0
+
         # Unit Defences
         self.morale_max = 1.0 # The maximum amount of morale for a ground unit as well as cover ops units.
         self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit
@@ -628,6 +645,36 @@ class Unit(Asset):
 
         self.owner_nation = None # Will be assigned when it is hooked by the nation.
         self.has_hooked = False
+
+    def load_asset(self,json_data:dict):
+        """ Takes json data in the form of a dictionary and loads its properties from there"""
+        self.uid = json_data["uid"]
+        self.name = json_data["name"]
+        self.type = json_data["type"]
+        self.construction_time = json_data["construction time"]
+        self.morale_current = json_data["morale"]
+        self.air_integrity_current = json_data["air integrity"]
+        self.hull_health_current = json_data["hull health"]
+        self.supply_current = json_data["supply"]
+        self.locked_unit_id = json_data["locked unit id"]
+        self.nickname = json_data["nickname"]
+        self.battlespace = json_data["battlespace"]
+        
+    def export_asset(self)->dict:
+        """Turn the asset into json data to be exported, returns a dictionary"""
+        json_data = {}
+        json_data["uid"] = self.uid
+        json_data["name"] = self.name
+        json_data["type"] = self.type
+        json_data["construction time"] = self.construction_time
+        json_data["morale"] = self.morale_current
+        json_data["air integrity"] = self.air_integrity_current
+        json_data["hull health"] = self.hull_health_current
+        json_data["supply"] = self.supply_current
+        json_data["locked unit id"] = self.locked_unit_id
+        json_data["nickname"] = self.nickname
+        json_data["battlespace"] = self.battlespace
+        return(json_data)
 
     def attack(self,enemy_unit)->bool:
         enemy_unit:Unit = enemy_unit
@@ -707,6 +754,26 @@ HULL: {self.hull_health_current}/{self.hull_health_max}
         if self.locked_unit != None:
             text+=f"Engaged: {self.locked_unit.nickname}"
         return text
+
+    async def manage(self, bot: commands.Bot, channel: discord.TextChannel, author: discord.User)->None:
+        
+        def check(m:discord.Message)->bool: # Check used to validate input
+            return(m.author == author)
+            
+        await channel.send(
+f"""Input choice:\n
+1. Change Unit Nickname:
+                           """)
+        menu_choice = int((await bot.wait_for('message',check=check)).content)
+        if menu_choice == 1:
+            await channel.send("Input new unit nickname:")
+            newnickname = (await bot.wait_for('message',check=check)).content
+            if len(newnickname)>0:
+                self.nickname = newnickname
+                await channel.send("Unit succesfully renamed")
+            else:
+                await channel.send("Failed to rename unit")
+
 
 class Weapon(Asset):
     def __init__(self):
@@ -1486,7 +1553,14 @@ class InfantryBrigade(Unit):
         
         ## Unit stats
         self.locked_unit:Unit = None
+        self.locked_unit_id:int = None
         self.compels_reaction:bool = False # This tells if the unit makes the enemy attack it.
+        
+        # Supply stats, need to be integrated later
+        self.max_supply = 1.0 
+        self.supply_current = 1.0
+        self.supply_use = 0.0
+
         # Unit Defences
         self.morale_max = 10.0 # The maximum amount of morale for a ground unit as well as cover ops units.
         self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit
@@ -1526,6 +1600,23 @@ class InfantryBrigade(Unit):
         self.owner_nation = None # Will be assigned when it is hooked by the nation.
         self.has_hooked = False
 
+    def cost_calculation(self,new_nation)->bool:
+        """ Takes a nation that is trying to build it as a parameter and returns a bool if it can build it"""
+        new_nation:nation.Nation = new_nation
+        if new_nation.production>=1 and new_nation.capital>=10000000:
+            return True
+        return False
+
+    def building_purchase(self,new_nation):
+        """ Takes the new nation that will build it and hooks to it."""
+        new_nation:nation.Nation = new_nation
+        new_nation.used_production+=1
+        new_nation.used_capital+=10000000
+        self.append_to_nation(new_nation)
+
+    def upkeep(self):
+        self.owner_nation.used_capital+=1000000
+
 class TacticalWing(Unit):
     def __init__(self):
         """Creates a tactical wing"""
@@ -1544,7 +1635,14 @@ class TacticalWing(Unit):
         ## Unit stats
         self.locked_unit:Unit = None
         self.compels_reaction:bool = True # This tells if the unit makes the enemy attack it.
-        
+        self.locked_unit_id:int = None
+
+
+        # Supply stats, need to be integrated later
+        self.max_supply = 1.0 
+        self.supply_current = 1.0
+        self.supply_use = 0.0
+
         # Unit Defences
         self.morale_max = 1.0 # The maximum amount of morale for a ground unit as well as cover ops units.
         self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit
@@ -1602,6 +1700,14 @@ class Destroyer(Unit):
         ## Unit stats
         self.locked_unit:Unit = None
         self.compels_reaction:bool = False # This tells if the unit makes the enemy attack it.
+        self.locked_unit_id:int = None
+
+
+        # Supply stats, need to be integrated later
+        self.max_supply = 1.0 
+        self.supply_current = 1.0
+        self.supply_use = 0.0
+        
         # Unit Defences
         self.morale_max = 1.0 # The maximum amount of morale for a ground unit as well as cover ops units.
         self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit
@@ -1659,6 +1765,13 @@ class Cruiser(Unit):
         ## Unit stats
         self.locked_unit:Unit = None
         self.compels_reaction:bool = False # This tells if the unit makes the enemy attack it.
+        self.locked_unit_id:int = None
+
+        # Supply stats, need to be integrated later
+        self.max_supply = 1.0 
+        self.supply_current = 1.0
+        self.supply_use = 0.0
+
         # Unit Defences
         self.morale_max = 1.0 # The maximum amount of morale for a ground unit as well as cover ops units.
         self.armour = 0.0 # How much it reduces soft attack by. (Hard attack damage is capped to this) ground unit

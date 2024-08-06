@@ -24,6 +24,7 @@ bot_intentions.message_content = True
 
 # A Bot is a client subclass that allows for fun commands and automatically sets up a command tree for you.
 bot = commands.Bot(command_prefix="!rpc ",intents=bot_intentions)
+bot.allowed_mentions = discord.AllowedMentions(everyone=None,roles=False,users=False)
 status_channel = None
 
 async def runner(bot):
@@ -150,7 +151,7 @@ f'''
                     await channel.send("Unregistered Type")
 
 
-            elif menu_choice == 2:  # print assets and allow user to pick one
+            elif menu_choice == 2:  # Manage Asset - print assets and allow user to pick one
                 await channel.send("Which type of asset would you like to view? wealth/political/force")
                 type_choice = (await bot.wait_for("message", check=check)).content
                 
@@ -188,8 +189,12 @@ f'''
                             await channel.send(f"{chosen_asset.name} is working correctly")
                         else:
                             await channel.send(f"{chosen_asset.name} has halted working")
+                        # run asset management command
+                        await chosen_asset.manage(bot,channel,author)
                     else:
                         await channel.send(f"{chosen_asset.name} is still under construction for {chosen_asset.construction_time} turns")
+
+                    # Instead of deleting asset, go to the asset manage command
 
                     await channel.send("Delete Asset? yes/no")
                     asset_delete_choice = (await bot.wait_for("message",check=check)).content

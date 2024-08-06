@@ -34,28 +34,64 @@
             ]
         },
         {
-            "name": "Iraeli Supreme War Council",
-            "player name": "226076978476875777",
-            "starting location": "Asia",
-            "capital": 10333294.0,
+            "name": "la republique francaise",
+            "player name": "731622911818858566",
+            "starting location": "europe",
+            "capital": 0,
             "turn": 0,
             "used production": 0,
             "used capital": 0,
-            "urban population": 9000000,
-            "rural population": 1000000,
+            "urban population": 54800000,
+            "rural population": 12600000,
+            "political stability": 50,
+            "economy strength": 50,
+            "wealth number": 3,
+            "political number": 1,
+            "force number": 1,
+            "assets wealth": [],
+            "assets political": [],
+            "assets force": []
+        },
+        {
+            "name": "<@226076978476875777>",
+            "player name": "706152404072267788",
+            "starting location": "balls",
+            "capital": 0,
+            "turn": 0,
+            "used production": 0,
+            "used capital": 0,
+            "urban population": 1000000,
+            "rural population": 1,
             "political stability": 50,
             "economy strength": 50,
             "wealth number": 1,
+            "political number": 1,
+            "force number": 3,
+            "assets wealth": [],
+            "assets political": [],
+            "assets force": []
+        },
+        {
+            "name": "Norway",
+            "player name": "226076978476875777",
+            "starting location": "Europe",
+            "capital": 652933332.0,
+            "turn": 0,
+            "used production": 0,
+            "used capital": 4000000,
+            "urban population": 4000000,
+            "rural population": 1400000,
+            "political stability": 50,
+            "economy strength": 50,
+            "wealth number": 2,
             "political number": 2,
-            "force number": 2,
+            "force number": 1,
             "assets wealth": [
-                7,
-                0,
-                10
+                20
             ],
             "assets political": [],
             "assets force": [
-                17
+                9
             ]
         }
     ]

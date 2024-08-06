@@ -73,6 +73,10 @@ def create_asset(new_asset:dict,asset_list:list):
         asset_object.load_asset(new_asset)
         asset_object.asset_list = asset_list
         asset_list.append(asset_object)
+    elif new_asset["name"] == "Infantry Brigade":
+        asset_object = asset.InfantryBrigade()
+        asset_object.load_asset(new_asset)
+        asset_list.append(asset_object)
 
 
 class AssetStore():
@@ -82,7 +86,7 @@ class AssetStore():
         self.wealth_assets:Dict[str,function]={"Industrial Processing Plant":asset.IPP,"Petroleum Plant":asset.PP,"Consumer Industry":asset.CI,
                                                "Rare Metals Refinery":asset.RMR,"Synthetic Plastic Plant":asset.SPP,"Electronics Hub":asset.EH}
         self.political_assets:Dict[str,function]={"Solar Array":asset.SA,"Hydrostation Dam":asset.HD,"Labour Programme":asset.LP,"Civilian Development":asset.CD,"Subversive Politics":asset.SP}
-        self.force_assets:Dict[str,function]={"Military Industry":asset.MI,"Traditional Army":asset.TraditionalArmy,
+        self.force_assets:Dict[str,function]={"Military Industry":asset.MI,"Traditional Army":asset.TraditionalArmy,"Infantry Brigade":asset.InfantryBrigade,
                                               "Manual Extraction Site":asset.MES,"Manual Oil Extraction Site":asset.MOES}
         self.idpointer = -1
 

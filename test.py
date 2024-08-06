@@ -107,7 +107,7 @@ for unit in unit_list:
     print(unit.display())
 
 unitgroup1.attack()
-print("--------Turn 2----------")
+print("--------Turn 1----------")
 
 for unit in unit_list:
     print(unit.display())

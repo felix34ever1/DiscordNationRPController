@@ -106,6 +106,25 @@
             "nickname": "",
             "enemy unit group id": null,
             "allied unit group id": null
+        },
+        {
+            "uid": 9,
+            "name": "Infantry Brigade",
+            "type": "force",
+            "construction time": 0,
+            "morale": 10.0,
+            "air integrity": 0.0,
+            "hull health": 0.0,
+            "supply": 1.0,
+            "locked unit id": null,
+            "nickname": "1st Defence Brigade",
+            "battlespace": "ground"
+        },
+        {
+            "uid": 20,
+            "name": "Petroleum Plant",
+            "type": "wealth",
+            "construction time": 3
         }
     ]
 }
