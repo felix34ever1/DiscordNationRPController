@@ -124,7 +124,7 @@ class Asset():
 
     async def manage(self,bot:commands.Bot,channel:discord.TextChannel, author: discord.User)-> None:
         """Allows the asset to be managed in some way. Directly being able to take the bot and use it."""
-        await channel.send("a")
+        await channel.send(f"Managing Asset {self.uid}")
         
 
 class DirectedAsset(Asset):
@@ -551,10 +551,12 @@ class UnitGroup(DirectedAsset):
                 return True
         return False
 
-    def add_unit(self):
+    def add_unit(self,unit):
         unit:Unit = unit
-        """Add a unit object to itself, unit should be verified first"""
-        pass
+        """Add a unit object to itself, unit should be verified first so that it does not belong elsewhere"""
+        if self.check_unit(unit): # also sets unit battlespace
+            self.unit_list.append(unit)
+            self.unit_id_list.append(unit.uid)
 
     def load_asset(self,json_data:dict):
         """ Takes json data in the form of a dictionary and loads its properties from there"""
@@ -581,6 +583,26 @@ class UnitGroup(DirectedAsset):
         json_data["enemy unit group id"] = self.enemy_unit_group_id
         json_data["allied unit group id"] = self.allied_unit_group_id
         return(json_data)
+
+    async def manage(self, bot: commands.Bot, channel: discord.TextChannel, author: discord.User)->None:
+        
+        def check(m:discord.Message)->bool: # Check used to validate input
+            return(m.author == author)
+            
+        await channel.send(
+f"""Input choice:\n
+1. Change Group Nickname:
+#Note: to add unit to group, use the command: editgroup instead
+                           """)
+        menu_choice = int((await bot.wait_for('message',check=check)).content)
+        if menu_choice == 1:
+            await channel.send("Input new unit group nickname:")
+            newnickname = (await bot.wait_for('message',check=check)).content
+            if len(newnickname)>0:
+                self.nickname = newnickname
+                await channel.send("Group succesfully renamed")
+            else:
+                await channel.send("Failed to rename group")
 
 class Unit(Asset):
     def __init__(self):

@@ -394,3 +394,84 @@ Bot finished initialising at Tue Aug  6 14:58:24 2024
 Assets Saved
 Nations Saved
 shutting down at Tue Aug  6 15:06:55 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Wed Aug  7 20:47:13 2024
+Assets Saved
+Nations Saved
+shutting down at Wed Aug  7 20:49:22 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Wed Aug  7 20:52:39 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Wed Aug  7 20:53:55 2024
+Assets Saved
+Nations Saved
+shutting down at Wed Aug  7 20:54:19 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Wed Aug  7 20:57:22 2024
+Assets Saved
+Nations Saved
+shutting down at Wed Aug  7 20:57:40 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:07:25 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:07:49 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:09:26 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:10:45 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:10:59 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:11:56 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:12:12 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:12:30 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:29:46 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:31:33 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:31:59 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:32:25 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:33:25 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:33:58 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 11:34:09 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 11:35:08 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 12:06:28 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 12:07:14 2024
+Assets Loaded
+Nations Loaded
+Bot finished initialising at Thu Aug  8 12:07:31 2024
+Assets Saved
+Nations Saved
+shutting down at Thu Aug  8 12:15:12 2024

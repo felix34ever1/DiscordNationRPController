@@ -1,6 +1,6 @@
 import json
 from nation import Nation
-from asset import Asset
+from asset import Asset,Unit,UnitGroup
 import assethandler
 
 
@@ -29,6 +29,14 @@ def load_assets(asset_list:list):
         assethandler.create_asset(asset_json,asset_list)
 
     asset_file.close()
+
+    # Now handle loading units to unit groups
+    for potentialgroup in asset_list:
+        if isinstance(potentialgroup,UnitGroup):
+            for potentialunit in asset_list:
+                if isinstance(potentialunit,Unit):
+                    if potentialunit.uid in potentialgroup.unit_id_list:
+                        potentialgroup.unit_list.append(potentialunit)
 
 def load_nations(nation_list:list,asset_list:list):
     """Takes a list and loads it with Nation objects from the json savefile"""

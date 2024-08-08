@@ -8,7 +8,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from nation import Nation
-from asset import Asset
+from asset import Asset,UnitGroup,Unit
 import assethandler
 
 TOKEN = os.getenv("TOKEN")
@@ -218,6 +218,142 @@ f'''
         await channel.send("Bot Timed Out")
     
     # shutdown
+
+    # editgroup
+@bot.command()
+async def editgroup(context:commands.Context):
+    """ A command that allows the user to access nation unit groups and add units to them"""
+
+    try:
+        channel = context.message.channel
+        author = context.author
+        cur_nation = None
+        
+        def check(m:discord.Message)->bool: # Check used to validate input
+            return(m.author == author)
+
+
+        for nation in nation_list: # Find the player nation
+            if nation.player_name == str(context.author.id):
+                cur_nation = nation
+        if type(cur_nation) == Nation: # Continue
+            await channel.send(f"Please select group to manage:\nID--Name")
+            text = ""
+            unitgroups:list[UnitGroup] = [] # Used to keep all unit groups together for later checking of where units are.
+            for asset in nation.assets_wealth:
+                if isinstance(asset,UnitGroup):
+                    unitgroups.append(asset)
+                    text+=(f"{asset.uid} - {asset.nickname}\n")
+            for asset in nation.assets_political:
+                if isinstance(asset,UnitGroup):
+                    unitgroups.append(asset)
+                    text+=(f"{asset.uid} - {asset.nickname}\n")
+            for asset in nation.assets_force:
+                if isinstance(asset,UnitGroup):
+                    unitgroups.append(asset)
+                    text+=(f"{asset.uid} - {asset.nickname}\n")
+            await channel.send(text)
+            choice = int((await bot.wait_for("message",check=check)).content)
+            # TODO Get the unit group,
+            selected_unitgroup = None
+            for asset in nation.assets_wealth:
+                if isinstance(asset,UnitGroup) and asset.uid == choice:
+                    selected_unitgroup = asset
+            for asset in nation.assets_political:
+                if isinstance(asset,UnitGroup) and asset.uid == choice:
+                    selected_unitgroup = asset
+            for asset in nation.assets_force:
+                if isinstance(asset,UnitGroup) and asset.uid == choice:
+                    selected_unitgroup = asset
+            if selected_unitgroup != None:
+                await channel.send(f"Selected {selected_unitgroup.nickname}:")
+                ended = False
+                while not ended: # Loop ability to do stuff until player wants to break loop
+                    await channel.send(
+                #  then present user with valid units that can go in battlegroup (showing which are already assigned elsewhere) 
+                # and let user put units in battlegroup until they type end or close
+f"""1. Remove current units
+2. Add new units
+3. Stop
+""")            
+                    choice = int((await bot.wait_for("message",check=check)).content)
+                    if choice == 1: # Remove units
+                        await channel.send("Choose unit ID to remove from unitgroup.")
+                        text = ""
+                        for unit in selected_unitgroup.unit_list:
+                            text+=f"ID:{unit.uid} - Nickname:{unit.nickname}\n"
+                        await channel.send(text)
+                        unitidchoice = int((await bot.wait_for("message",check=check)).content)
+                        for unit in selected_unitgroup.unit_list:
+                            if unit.uid == unitidchoice:
+                                # Remove unit from battlegroup, and remove its locked attack unit.
+                                selected_unitgroup.unit_id_list.remove(unit.uid)
+                                selected_unitgroup.unit_list.remove(unit)
+                                if unit.locked_unit != None: # Remove also 
+                                    unit.locked_unit.locked_unit=None
+                                    unit.locked_unit.locked_unit_id=None
+                                unit.locked_unit = None
+                                unit.locked_unit_id = None
+                    
+                    elif choice == 2: # Add units
+                        # Go through units adding them to text
+                        units:list[Unit] = []
+                        text = ""
+                        for asset in nation.assets_wealth:
+                            if isinstance(asset,Unit):
+                                #Verify that unit can be in the battlespaces of the unitgroup
+                                for possible_battlespace in asset.possible_battlespaces:
+                                    if possible_battlespace in selected_unitgroup.battlespaces:
+                                        units.append(asset)
+                                        break
+                        for asset in nation.assets_political:
+                            if isinstance(asset,Unit):
+                                units.append(asset)
+                        for asset in nation.assets_force:
+                            if isinstance(asset,Unit):
+                                units.append(asset)
+                        # Go through unit and find out if it belongs to a unitgroup already 
+                        for unit in units:
+                            for unitgroup in unitgroups:
+                                if unit in unitgroup.unit_list:
+                                    text+=f"{unit.uid} - {unit.nickname} - Part of: {unitgroup.nickname}\n"
+                                    break
+                                # If not in any unit group, it will print this instead \/
+                                text+=f"{unit.uid} - {unit.nickname} - Unassigned\n"
+                        await channel.send("Please select unit by ID:\nID--Name--Assignment")
+                        await channel.send(text)
+
+                        unitidchoice = int((await bot.wait_for("message",check=check)).content)
+                        #Find the unit and then add it to the unit group, making sure it isnt in another one first
+                        for unit in units:
+                            if unit.uid == unitidchoice:
+                                for unitgroup in unitgroups:
+                                    if unit in unitgroup.unit_list:
+                                        # Remove unit from unitgroup:
+                                        unitgroup.unit_list.remove(unit)
+                                        unitgroup.unit_id_list.remove(unit.uid)
+                                        if unit.locked_unit != None: # Remove info about lockedunit
+                                            unit.locked_unit.locked_unit_id=None
+                                            unit.locked_unit.locked_unit=None
+                                            unit.locked_unit=None
+                                            unit.locked_unit_id=None
+                            # Now add to new unitgroup
+                            selected_unitgroup.add_unit(unit)
+                                        
+
+                    elif choice == 3: # Exit
+                        ended = True
+
+
+
+            else:
+                await channel.send("Unable to find unit group")
+
+        else:
+            await channel.send("You must create a nation first!")
+    except Exception as error:
+        await channel.send(f"Error completing command: {error}")
+
 @bot.command()
 @commands.is_owner()
 async def shutdown(context:commands.Context):

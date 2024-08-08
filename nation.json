@@ -75,10 +75,10 @@
             "name": "Norway",
             "player name": "226076978476875777",
             "starting location": "Europe",
-            "capital": 652933332.0,
+            "capital": 586866664.0,
             "turn": 0,
             "used production": 0,
-            "used capital": 4000000,
+            "used capital": 5000000,
             "urban population": 4000000,
             "rural population": 1400000,
             "political stability": 50,
@@ -91,7 +91,8 @@
             ],
             "assets political": [],
             "assets force": [
-                9
+                9,
+                18
             ]
         }
     ]
