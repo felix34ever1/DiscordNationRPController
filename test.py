@@ -97,9 +97,9 @@ unitgroup1.enemy_unit_group = unitgroup2
 unitgroup3.allied_unit_group = unitgroup1
 unitgroup1.fight_type = "pairup"
 unitgroup3.fight_type = "randomall"
-#unitgroup3.fight_length = 5
-#unitgroup1.attack()
-unitgroup1.attack()
+unitgroup3.fight_length = 1
+unitgroup3.support("combat.log")
+unitgroup1.attack("combat.log")
 unitgroup1.fought_this_turn = False
 unitgroup2.fought_this_turn = False
 
@@ -107,7 +107,7 @@ for unit in unit_list:
     print(unit.display())
 
 unitgroup1.attack()
-print("--------Turn 1----------")
+print("--------Turn 2----------")
 
 for unit in unit_list:
     print(unit.display())

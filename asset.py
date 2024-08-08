@@ -310,7 +310,7 @@ class UnitGroup(DirectedAsset):
         #- pairup(each unit pairs up with an enemy, unpaired units don't attack but increase advantage),
         #- randomall(all units randomly pick an enemy unit to attack, multiple units can pick the same) 
 
-        self.attack_type = "" # used for figuring out how the they find the enemy
+        self.attack_type = "" # used for figuring out how the they find the enemy - Might be defunct
         self.unit_list:list[Unit] = []
         self.unit_id_list:list[int] = []
         self.enemy_unit_group:UnitGroup = None
@@ -360,8 +360,12 @@ class UnitGroup(DirectedAsset):
             new_nation.assets_force_id.append(self.uid)
             new_nation.assets_force.append(self)
 
-    def attack(self)->int:
+    def attack(self,logfilepath:str="")->int:
+        #Logfile is an optional file to record battle logs in
+        logtext = f"{self.nickname} Attack Log - "
+
         if self.enemy_unit_group != None and not self.fought_this_turn: # Check there are units in the enemy group
+            logtext+=f"Fighting {self.enemy_unit_group.nickname}"
             for _ in range(self.fight_length):
                 enemy_units:list[Unit] = []
                 enemy_units = (self.enemy_unit_group.unit_list).copy() # Shallow copies the lists so that elements can be removed for pairing purposes
@@ -378,6 +382,7 @@ class UnitGroup(DirectedAsset):
 
                 # Go through each unit and select an opponent
                 if self.fight_type == "pairup":
+                    logtext+=" Type: Pairup\n"
                     for unit in unit_list:
                         # First check if the unit is already locked with a valid unit, if so, remove valid unit from list
                         if unit.locked_unit != None:
@@ -399,35 +404,50 @@ class UnitGroup(DirectedAsset):
                         if unit.locked_unit != None:
                             enemy_unit = unit.locked_unit
                             if unit.recon_bonus>enemy_unit.recon_bonus:
+                                logtext+=f"{unit.nickname} has recon advantage on {enemy_unit.nickname}\n"
                                 if unit.check_battlespace(enemy_unit):
                                     unit.attack(enemy_unit)
+                                    logtext+=f"{unit.nickname} attacks {enemy_unit.nickname}, using: "
                                     for weapon in unit.weapon_list:
                                         if weapon.check_battlespace(enemy_unit):
                                             weapon.attack(enemy_unit)
+                                            logtext+=f"{weapon.name} - "
+                                    logtext+=f"\n"
                                 if enemy_unit.check_battlespace(unit):
                                     enemy_unit.attack(unit)
+                                    logtext+=f"{enemy_unit.nickname} attacks {unit.nickname}, using: "
                                     for weapon in enemy_unit.weapon_list:
                                         if weapon.check_battlespace(unit):
                                             weapon.attack(unit)
+                                            logtext+=f"{weapon.name} - "
+                                    logtext+=f"\n"
                             else:
+                                logtext+=f"{enemy_unit.nickname} has recon advantage on {unit.nickname}\n"
                                 if enemy_unit.check_battlespace(unit):
                                     enemy_unit.attack(unit)
+                                    logtext+=f"{enemy_unit.nickname} attacks {unit.nickname}, using: "
                                     for weapon in enemy_unit.weapon_list:
                                         if weapon.check_battlespace(unit):
                                             weapon.attack(unit)
+                                            logtext+=f"{weapon.name} - "
+                                    logtext+=f"\n"
                                 if unit.check_battlespace(enemy_unit):
                                     unit.attack(enemy_unit)
+                                    logtext+=f"{unit.nickname} attacks {enemy_unit.nickname}, using: "
                                     for weapon in unit.weapon_list:
                                         if weapon.check_battlespace(enemy_unit):
                                             weapon.attack(enemy_unit)
+                                            logtext+=f"{weapon.name} - "
+                                    logtext+=f"\n"
 
                     self.fought_this_turn = True
                     self.enemy_unit_group.fought_this_turn = True
 
                 elif self.fight_type == "randomall":
+                    logtext+=" Type: Randomall\n"
                     for unit in unit_list: 
                         if len(enemy_units) == 0: # Makes sure you're not trying to fight a size 0 army or that the unit is already locked.
-                                break
+                                break # Future Felix note: Why tf did I code this like this? With the break clause instead of just an if statement before hand. So whack
                         else:
                             unit_index = random.randint(0,len(enemy_units)-1)
                             unit.locked_unit = enemy_units[unit_index]
@@ -445,11 +465,15 @@ class UnitGroup(DirectedAsset):
                         if unit.recon_bonus > unit.locked_unit.recon_bonus:
                             if unit.check_battlespace(unit.locked_unit):
                                 unit.attack(unit.locked_unit)
+                                logtext+=f"{unit.nickname} attacks {unit.locked_unit.nickname}\n"
                             for weapon in unit.weapon_list:
                                 unit_index = random.randint(0,len(enemy_units)-1)
                                 enemy = enemy_units[unit_index]
                                 if weapon.check_battlespace(enemy):
                                     weapon.attack(enemy)
+                                    logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
+                                else:
+                                    logtext+=f"- {unit.nickname}'s {weapon.name} fails to target {enemy.nickname}\n"
                         else:
                             unit_attack_queue.append(unit)
                     
@@ -457,36 +481,47 @@ class UnitGroup(DirectedAsset):
                         if unit.recon_bonus >= unit.locked_unit.recon_bonus:
                             if unit.check_battlespace(unit.locked_unit):
                                 unit.attack(unit.locked_unit)
+                                logtext+=f"{unit.nickname} attacks {unit.locked_unit.nickname}\n"
                             for weapon in unit.weapon_list:
                                 unit_index = random.randint(0,len(unit_list)-1)
                                 enemy = unit_list[unit_index]
                                 if weapon.check_battlespace(enemy):
                                     weapon.attack(enemy)
+                                    logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
+                                else:
+                                    logtext+=f"- {unit.nickname}'s {weapon.name} fails to target {enemy.nickname}\n"                                    
                         else:
                             unit_attack_queue.append(unit)
                     
                     for unit in unit_attack_queue:
                         if unit.check_battlespace(unit.locked_unit):
                             unit.attack(unit.locked_unit)
+                            logtext+=f"{unit.nickname} attacks {unit.locked_unit.nickname}\n"
                         for weapon in unit.weapon_list:
                             unit_index = random.randint(0,len(unit_list)-1)
                             if unit in unit_list:
                                 enemy = enemy_units[unit_index]
+                                logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
                             elif unit in enemy_units:
                                 enemy = unit_list[unit_index]
                             if weapon.check_battlespace(enemy):
                                 weapon.attack(enemy)
+                                logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
 
                     self.fought_this_turn = True
                     self.enemy_unit_group.fought_this_turn = True
-    
+            if len(logfilepath)!=0:
+                logfile = open(logfilepath,"a")
+                logfile.write(logtext)
         else:
             return len(self.unit_list) # Else return the number of units as a sort of occupation amount
 
-    def support(self):
+    def support(self,logfilepath:str=""):
         if self.allied_unit_group != None and not self.fought_this_turn:
+            logtext = f"{self.nickname} Support Log - "
         # Check if the attached unit group has an enemy
             if self.allied_unit_group.enemy_unit_group != None:
+                logtext = f"{self.nickname} is supporting {self.allied_unit_group.nickname}, attacking {self.allied_unit_group.enemy_unit_group.nickname}, type: {self.fight_type}\n"
                 enemy_unit_group = self.allied_unit_group.enemy_unit_group
                 enemy_units = enemy_unit_group.unit_list.copy()
                 unit_list = self.unit_list.copy()
@@ -517,15 +552,22 @@ class UnitGroup(DirectedAsset):
                         if unit.check_battlespace(unit.locked_unit):
                             unit.attack(unit.locked_unit)
                             if self.fight_type == "pairup":
+                                logtext+=f"{unit.nickname} attacked {unit.locked_unit} with:\n"
                                 for weapon in unit.weapon_list:
                                     if weapon.check_battlespace(unit.locked_unit):
                                         weapon.attack(unit.locked_unit)
+                                        logtext+=f"- {weapon.name}\n"
                             elif self.fight_type == "randomall":
                                 for weapon in unit.weapon_list:
                                     unit_index = random.randint(0,len(enemy_units)-1)
                                     enemy = enemy_units[unit_index]
                                     if weapon.check_battlespace(enemy):
                                         weapon.attack(enemy)
+                                        logtext+=f"{unit.nickname} attacked {enemy.nickname} with {weapon.name}\n"
+                
+                if len(logfilepath)!=0:
+                    logfile = open(logfilepath,"a")
+                    logfile.write(logtext)
 
                 self.fought_this_turn = True
 
@@ -795,7 +837,6 @@ f"""Input choice:\n
                 await channel.send("Unit succesfully renamed")
             else:
                 await channel.send("Failed to rename unit")
-
 
 class Weapon(Asset):
     def __init__(self):
