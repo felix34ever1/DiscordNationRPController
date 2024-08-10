@@ -4,10 +4,10 @@
             "name": "The Islamic Republic of Iran",
             "player name": "549995061136326666",
             "starting location": "Asia",
-            "capital": 3096999984.0,
+            "capital": 4608999980.0,
             "turn": 0,
             "used production": 0,
-            "used capital": 0,
+            "used capital": 1000000,
             "urban population": 68000000,
             "rural population": 19000000,
             "political stability": 50,
@@ -24,13 +24,16 @@
                 13,
                 14,
                 15,
-                16
+                16,
+                19
             ],
             "assets political": [
                 11
             ],
             "assets force": [
-                12
+                12,
+                21,
+                22
             ]
         },
         {
@@ -53,32 +56,13 @@
             "assets force": []
         },
         {
-            "name": "<@226076978476875777>",
-            "player name": "706152404072267788",
-            "starting location": "balls",
-            "capital": 0,
-            "turn": 0,
-            "used production": 0,
-            "used capital": 0,
-            "urban population": 1000000,
-            "rural population": 1,
-            "political stability": 50,
-            "economy strength": 50,
-            "wealth number": 1,
-            "political number": 1,
-            "force number": 3,
-            "assets wealth": [],
-            "assets political": [],
-            "assets force": []
-        },
-        {
             "name": "Norway",
             "player name": "226076978476875777",
             "starting location": "Europe",
             "capital": 586866664.0,
             "turn": 0,
             "used production": 0,
-            "used capital": 5000000,
+            "used capital": 11000000,
             "urban population": 4000000,
             "rural population": 1400000,
             "political stability": 50,

@@ -2,6 +2,7 @@ import main
 import nation
 import asset
 import assethandler
+import war
 
 ### Careful running as it could change asset.json or if errors, cause other problems 
 
@@ -98,16 +99,28 @@ unitgroup3.allied_unit_group = unitgroup1
 unitgroup1.fight_type = "pairup"
 unitgroup3.fight_type = "randomall"
 unitgroup3.fight_length = 1
-unitgroup3.support("combat.log")
-unitgroup1.attack("combat.log")
-unitgroup1.fought_this_turn = False
-unitgroup2.fought_this_turn = False
+# unitgroup3.support("combat.log")
+# unitgroup1.attack("combat.log")
+# unitgroup1.fought_this_turn = False
+# unitgroup2.fought_this_turn = False
 
-for unit in unit_list:
-    print(unit.display())
+# for unit in unit_list:
+#     print(unit.display())
 
-unitgroup1.attack()
-print("--------Turn 2----------")
+# unitgroup1.attack()
+# print("--------Turn 2----------")
 
-for unit in unit_list:
-    print(unit.display())
+# for unit in unit_list:
+#     print(unit.display())
+
+#  war_list:list[war.War] = []
+# war_list.append(war.War())
+# war_list[0].name = "Pointless ahh war"
+# war_list[0].aggressor_nation_uids.append("1")
+# main.save_wars(war_list)
+
+war_list:list[war.War] = []
+
+main.load_wars(war_list)
+
+print(war_list[0].name)

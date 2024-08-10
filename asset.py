@@ -2,14 +2,14 @@ import random
 import copy
 import discord
 from discord.ext import commands
-### Asset class, <<<<Maybe>>>> all Asset subclasses are contained within the economy, political or force script. 
+### Asset class, <<<<Maybe>>>> all Asset subclasses are found here!
 
 # Needed asset types: 
-# Ability (Performs an action and then can delete itself)
-# DirectedAbility (Performs an action and can hold a target nation)
-# DirectedAsset (able to target both the owner nation and target nation)
-# UnitGroup (holds units)
-# Unit (Acts like a unit)
+# Ability (Performs an action and then can delete itself) \/
+# DirectedAbility (Performs an action and can hold a target nation) \/
+# DirectedAsset (able to target both the owner nation and target nation) \/
+# UnitGroup (holds units) \/
+# Unit (Acts like a unit) \/
 
 class Asset():
 
@@ -310,7 +310,7 @@ class UnitGroup(DirectedAsset):
         #- pairup(each unit pairs up with an enemy, unpaired units don't attack but increase advantage),
         #- randomall(all units randomly pick an enemy unit to attack, multiple units can pick the same) 
 
-        self.attack_type = "" # used for figuring out how the they find the enemy - Might be defunct
+        self.attack_type = "frontline" # used for figuring out how the they find the enemy - This is before the pairup/randomall and will be used by the conflict manager.
         self.unit_list:list[Unit] = []
         self.unit_id_list:list[int] = []
         self.enemy_unit_group:UnitGroup = None
@@ -709,6 +709,8 @@ class Unit(Asset):
 
         self.owner_nation = None # Will be assigned when it is hooked by the nation.
         self.has_hooked = False
+
+    
 
     def load_asset(self,json_data:dict):
         """ Takes json data in the form of a dictionary and loads its properties from there"""
@@ -1597,6 +1599,7 @@ class TraditionalArmy(UnitGroup):
         new_nation:nation.Nation = new_nation
         new_nation.used_production+=2
         new_nation.used_capital+=100000000
+        self.construction_time = 1
         self.append_to_nation(new_nation)
 
 class InfantryBrigade(Unit):
@@ -1676,9 +1679,10 @@ class InfantryBrigade(Unit):
         new_nation.used_production+=1
         new_nation.used_capital+=10000000
         self.append_to_nation(new_nation)
+        self.construction_time = 1
 
     def upkeep(self):
-        self.owner_nation.used_capital+=1000000
+        self.owner_nation.used_capital+=20000000
 
 class TacticalWing(Unit):
     def __init__(self):

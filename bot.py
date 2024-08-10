@@ -9,6 +9,7 @@ from discord.ext import commands
 
 from nation import Nation
 from asset import Asset,UnitGroup,Unit
+from war import War,nextWarID,Battle
 import assethandler
 
 TOKEN = os.getenv("TOKEN")
@@ -16,6 +17,7 @@ TOKEN = os.getenv("TOKEN")
 # Non Bot Stuff
 nation_list: list[Nation] = []
 asset_list: list[Asset] = []
+war_list: list[War] = []
 assetStore = assethandler.AssetStore(asset_list,nation_list)
 
 # Bot Stuff
@@ -82,8 +84,8 @@ async def savenations(context:commands.Context):
             main.save_assets(asset_list)
             main.save_nations(nation_list)
 
-    #managenation
-@bot.command()
+    
+@bot.command() #managenation
 async def managenation(context:commands.Context):
     """ A command that allows the user to access nation assets or build new ones"""
 
@@ -215,12 +217,10 @@ f'''
         else: # Exit code
             await channel.send("Nation not found")
     except asyncio.TimeoutError:
-        await channel.send("Bot Timed Out")
-    
-    # shutdown
+        await channel.send("Bot Timed Out") # Shutdown
 
     # editgroup
-@bot.command()
+@bot.command() #editgroup
 async def editgroup(context:commands.Context):
     """ A command that allows the user to access nation unit groups and add units to them"""
 
@@ -236,19 +236,21 @@ async def editgroup(context:commands.Context):
         for nation in nation_list: # Find the player nation
             if nation.player_name == str(context.author.id):
                 cur_nation = nation
+        if cur_nation == None:
+            raise Exception("No player nation found, please sign up first.")
         if type(cur_nation) == Nation: # Continue
-            await channel.send(f"Please select group to manage:\nID--Name")
+            await channel.send(f"Please select group to manage:\nID -- Name")
             text = ""
             unitgroups:list[UnitGroup] = [] # Used to keep all unit groups together for later checking of where units are.
-            for asset in nation.assets_wealth:
+            for asset in cur_nation.assets_wealth:
                 if isinstance(asset,UnitGroup):
                     unitgroups.append(asset)
                     text+=(f"{asset.uid} - {asset.nickname}\n")
-            for asset in nation.assets_political:
+            for asset in cur_nation.assets_political:
                 if isinstance(asset,UnitGroup):
                     unitgroups.append(asset)
                     text+=(f"{asset.uid} - {asset.nickname}\n")
-            for asset in nation.assets_force:
+            for asset in cur_nation.assets_force:
                 if isinstance(asset,UnitGroup):
                     unitgroups.append(asset)
                     text+=(f"{asset.uid} - {asset.nickname}\n")
@@ -256,13 +258,13 @@ async def editgroup(context:commands.Context):
             choice = int((await bot.wait_for("message",check=check)).content)
             # TODO Get the unit group,
             selected_unitgroup = None
-            for asset in nation.assets_wealth:
+            for asset in cur_nation.assets_wealth:
                 if isinstance(asset,UnitGroup) and asset.uid == choice:
                     selected_unitgroup = asset
-            for asset in nation.assets_political:
+            for asset in cur_nation.assets_political:
                 if isinstance(asset,UnitGroup) and asset.uid == choice:
                     selected_unitgroup = asset
-            for asset in nation.assets_force:
+            for asset in cur_nation.assets_force:
                 if isinstance(asset,UnitGroup) and asset.uid == choice:
                     selected_unitgroup = asset
             if selected_unitgroup != None:
@@ -281,7 +283,7 @@ f"""1. Remove current units
                         await channel.send("Choose unit ID to remove from unitgroup.")
                         text = ""
                         for unit in selected_unitgroup.unit_list:
-                            text+=f"ID:{unit.uid} - Nickname:{unit.nickname}\n"
+                            text+=f"{unit.uid} -- Nickname:{unit.nickname}\n"
                         await channel.send(text)
                         unitidchoice = int((await bot.wait_for("message",check=check)).content)
                         for unit in selected_unitgroup.unit_list:
@@ -299,17 +301,17 @@ f"""1. Remove current units
                         # Go through units adding them to text
                         units:list[Unit] = []
                         text = ""
-                        for asset in nation.assets_wealth:
+                        for asset in cur_nation.assets_wealth:
                             if isinstance(asset,Unit):
                                 #Verify that unit can be in the battlespaces of the unitgroup
                                 for possible_battlespace in asset.possible_battlespaces:
                                     if possible_battlespace in selected_unitgroup.battlespaces:
                                         units.append(asset)
                                         break
-                        for asset in nation.assets_political:
+                        for asset in cur_nation.assets_political:
                             if isinstance(asset,Unit):
                                 units.append(asset)
-                        for asset in nation.assets_force:
+                        for asset in cur_nation.assets_force:
                             if isinstance(asset,Unit):
                                 units.append(asset)
                         # Go through unit and find out if it belongs to a unitgroup already 
@@ -354,6 +356,71 @@ f"""1. Remove current units
     except Exception as error:
         await channel.send(f"Error completing command: {error}")
 
+@bot.command() #warmenu
+async def warmenu(context:commands.Context):
+    """ A command that allows the user to access the war menu, starting wars and assigning battlegroups to wars."""
+
+    try:
+        channel = context.message.channel
+        author = context.author
+        cur_nation = None
+        
+        def check(m:discord.Message)->bool: # Check used to validate input
+            return(m.author == author)
+
+
+        for nation in nation_list: # Find the player nation
+            if nation.player_name == str(context.author.id):
+                cur_nation = nation
+        if cur_nation == None: # From this point on it can be assumed the player has a nation
+            raise Exception("No player nation found, please sign up first.")
+
+        await channel.send(
+f"""
+War Menu: Please type selected option\n
+1. Start war
+2. Manage wars
+""")
+
+        choice:int = int((await bot.wait_for('message',check=check)).content)
+        if choice == 1:
+            # Start war
+            await channel.send("Please choose target nation by number\nNumber -- Nation Name\n")
+            possible_nations:list[Nation] = []
+            for nation in nation_list:
+                if nation != cur_nation:
+                    possible_nations.append(nation)
+            text = ""
+            i = 0
+            if len(possible_nations) == 0:
+                raise Exception("No nations available to target, you are possibly the only player playing.")
+            for nation in possible_nations:
+                text+=f"{i} - {nation.name}\n"
+                i+=1
+            await channel.send(text)
+            indexchoice:int = int((await bot.wait_for('message',check=check)).content)
+            if indexchoice<0 or indexchoice>=len(possible_nations):
+                raise Exception("Nation selection out of range")
+            target_nation = possible_nations[indexchoice]
+
+            new_war = War()
+            new_war.uid = nextWarID(war_list)
+            new_war.aggressor_nation_uids.append(cur_nation.player_name)
+            new_war.aggressor_nations.append(cur_nation)
+            new_war.defender_nation_uids.append(target_nation.player_name)
+            new_war.defender_nations.append(cur_nation)
+
+            await channel.send("Type name of the war:")
+            war_name:str = (await bot.wait_for('message',check=check)).content
+            new_war.name = war_name
+
+            war_list.append(new_war)
+
+            await channel.send(f"Succesfully created {new_war.name} against {target_nation.name}")
+
+    except Exception as error:
+        await channel.send(f"Error completing command: {error}")
+
 @bot.command()
 @commands.is_owner()
 async def shutdown(context:commands.Context):
@@ -361,6 +428,8 @@ async def shutdown(context:commands.Context):
     with open("logs.txt","a") as file:
         main.save_assets(asset_list)
         file.write("Assets Saved\n")
+        main.save_wars(war_list)
+        file.write("Wars Saved\n")
         main.save_nations(nation_list)
         file.write("Nations Saved\n")
         file.write(f"shutting down at {time.ctime(time.time())}\n")
@@ -437,13 +506,22 @@ async def on_ready():
         assetStore.nextID()
         await status_channel.send("Asset Loading Complete")
         file.write("Assets Loaded\n")
+        main.load_wars(war_list)
+        await status_channel.send("War Loading Complete")
+        file.write("Wars Loaded\n")
         main.load_nations(nation_list,asset_list)
         await status_channel.send("Nation Loading Complete")
         file.write("Nations Loaded\n")
         await status_channel.send(f"Bot finished initialising at {time.ctime(time.time())}")
         file.write(f"Bot finished initialising at {time.ctime(time.time())}\n")
+        # task1 = asyncio.create_task(timer())
+        # await task1
 
-
+async def timer():
+    """ Can be used as a timer coroutine to make a turn happen every 24 hours """
+    status_channel = bot.get_channel(1138473460868317254)
+    await asyncio.sleep(60*60*24)
+    await status_channel.send(f"Timer has passed at {time.ctime(time.time())}\n")
 
 #if __name__ == "__main__":
 #  asyncio.run(runner(bot))

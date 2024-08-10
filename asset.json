@@ -138,6 +138,38 @@
             "nickname": "Norwegian Armed Forces",
             "enemy unit group id": null,
             "allied unit group id": null
+        },
+        {
+            "uid": 19,
+            "name": "Industrial Processing Plant",
+            "type": "wealth",
+            "construction time": 0
+        },
+        {
+            "uid": 21,
+            "name": "Infantry Brigade",
+            "type": "force",
+            "construction time": 0,
+            "morale": 10.0,
+            "air integrity": 0.0,
+            "hull health": 0.0,
+            "supply": 1.0,
+            "locked unit id": null,
+            "nickname": "First Islamic Revolutionary Guard Brigade",
+            "battlespace": "ground"
+        },
+        {
+            "uid": 22,
+            "name": "Traditional Army",
+            "type": "force",
+            "construction time": 0,
+            "target nation id": "",
+            "unit id list": [
+                21
+            ],
+            "nickname": "",
+            "enemy unit group id": null,
+            "allied unit group id": null
         }
     ]
 }

@@ -1,6 +1,7 @@
 import json
 from nation import Nation
 from asset import Asset,Unit,UnitGroup
+from war import War,Battle
 import assethandler
 
 
@@ -38,6 +39,19 @@ def load_assets(asset_list:list):
                     if potentialunit.uid in potentialgroup.unit_id_list:
                         potentialgroup.unit_list.append(potentialunit)
 
+def load_wars(war_list:list):
+    """Takes a list and loads it with Asset objects from the json savefile"""
+    with open("war.json","r") as war_file:
+        war_text = war_file.read()
+
+        imported_wars = json.loads(war_text)
+        for war_json in imported_wars["list"]:
+            new_war = War()
+            new_war.load_war(war_json)
+            war_list.append(new_war)
+
+
+
 def load_nations(nation_list:list,asset_list:list):
     """Takes a list and loads it with Nation objects from the json savefile"""
     
@@ -65,8 +79,18 @@ def save_assets(asset_list:list[Asset]):
     with open("asset.json","w") as file: # open json file
         file.write(save_data_json)
 
-            
+def save_wars(war_list:list[War]):
+    """Save assets into json file :)"""
+    save_data = {"list":[]}
+    
+    for war in war_list: # Extract all data into one list
+        war_save_data = war.export_war()
+        save_data["list"].append(war_save_data)
 
+    save_data_json = json.dumps(save_data,indent=4) # turns python data to a json
+    with open("war.json","w") as file: # open json file
+        file.write(save_data_json)
+            
 def save_nations(nation_list: list[Nation]):
     """Saves all the nations from a list of nations to a json file"""
     save_data = {"list":[]}
