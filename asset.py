@@ -363,6 +363,7 @@ class UnitGroup(DirectedAsset):
     def attack(self,logfilepath:str="")->int:
         #Logfile is an optional file to record battle logs in
         logtext = f"{self.nickname} Attack Log - "
+        enemy_units:list[Unit] = []
 
         if self.enemy_unit_group != None and not self.fought_this_turn: # Check there are units in the enemy group
             logtext+=f"Fighting {self.enemy_unit_group.nickname}"
@@ -406,38 +407,38 @@ class UnitGroup(DirectedAsset):
                             if unit.recon_bonus>enemy_unit.recon_bonus:
                                 logtext+=f"{unit.nickname} has recon advantage on {enemy_unit.nickname}\n"
                                 if unit.check_battlespace(enemy_unit):
-                                    unit.attack(enemy_unit)
                                     logtext+=f"{unit.nickname} attacks {enemy_unit.nickname}, using: "
+                                    logtext+=unit.attack(enemy_unit)[1]
                                     for weapon in unit.weapon_list:
                                         if weapon.check_battlespace(enemy_unit):
-                                            weapon.attack(enemy_unit)
                                             logtext+=f"{weapon.name} - "
+                                            logtext+=weapon.attack(enemy_unit)[1]
                                     logtext+=f"\n"
                                 if enemy_unit.check_battlespace(unit):
-                                    enemy_unit.attack(unit)
                                     logtext+=f"{enemy_unit.nickname} attacks {unit.nickname}, using: "
+                                    logtext+=enemy_unit.attack(unit)[1]
                                     for weapon in enemy_unit.weapon_list:
                                         if weapon.check_battlespace(unit):
-                                            weapon.attack(unit)
                                             logtext+=f"{weapon.name} - "
+                                            logtext+=weapon.attack(unit)[1]
                                     logtext+=f"\n"
                             else:
                                 logtext+=f"{enemy_unit.nickname} has recon advantage on {unit.nickname}\n"
                                 if enemy_unit.check_battlespace(unit):
-                                    enemy_unit.attack(unit)
                                     logtext+=f"{enemy_unit.nickname} attacks {unit.nickname}, using: "
+                                    logtext+=enemy_unit.attack(unit)[1]
                                     for weapon in enemy_unit.weapon_list:
                                         if weapon.check_battlespace(unit):
-                                            weapon.attack(unit)
                                             logtext+=f"{weapon.name} - "
+                                            logtext+=weapon.attack(unit)[1]
                                     logtext+=f"\n"
                                 if unit.check_battlespace(enemy_unit):
-                                    unit.attack(enemy_unit)
                                     logtext+=f"{unit.nickname} attacks {enemy_unit.nickname}, using: "
+                                    logtext+=unit.attack(enemy_unit)[1]
                                     for weapon in unit.weapon_list:
                                         if weapon.check_battlespace(enemy_unit):
-                                            weapon.attack(enemy_unit)
                                             logtext+=f"{weapon.name} - "
+                                            logtext+=weapon.attack(enemy_unit)[1]
                                     logtext+=f"\n"
 
                     self.fought_this_turn = True
@@ -464,14 +465,14 @@ class UnitGroup(DirectedAsset):
                     for unit in unit_list:
                         if unit.recon_bonus > unit.locked_unit.recon_bonus:
                             if unit.check_battlespace(unit.locked_unit):
-                                unit.attack(unit.locked_unit)
                                 logtext+=f"{unit.nickname} attacks {unit.locked_unit.nickname}\n"
+                                logtext+=unit.attack(unit.locked_unit)[1]
                             for weapon in unit.weapon_list:
                                 unit_index = random.randint(0,len(enemy_units)-1)
                                 enemy = enemy_units[unit_index]
                                 if weapon.check_battlespace(enemy):
-                                    weapon.attack(enemy)
                                     logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
+                                    logtext+=weapon.attack(enemy)[1]
                                 else:
                                     logtext+=f"- {unit.nickname}'s {weapon.name} fails to target {enemy.nickname}\n"
                         else:
@@ -480,14 +481,14 @@ class UnitGroup(DirectedAsset):
                     for unit in enemy_units:
                         if unit.recon_bonus >= unit.locked_unit.recon_bonus:
                             if unit.check_battlespace(unit.locked_unit):
-                                unit.attack(unit.locked_unit)
                                 logtext+=f"{unit.nickname} attacks {unit.locked_unit.nickname}\n"
+                                logtext+=unit.attack(unit.locked_unit)[1]
                             for weapon in unit.weapon_list:
                                 unit_index = random.randint(0,len(unit_list)-1)
                                 enemy = unit_list[unit_index]
                                 if weapon.check_battlespace(enemy):
-                                    weapon.attack(enemy)
                                     logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
+                                    logtext+=weapon.attack(enemy)[1]
                                 else:
                                     logtext+=f"- {unit.nickname}'s {weapon.name} fails to target {enemy.nickname}\n"                                    
                         else:
@@ -495,8 +496,8 @@ class UnitGroup(DirectedAsset):
                     
                     for unit in unit_attack_queue:
                         if unit.check_battlespace(unit.locked_unit):
-                            unit.attack(unit.locked_unit)
                             logtext+=f"{unit.nickname} attacks {unit.locked_unit.nickname}\n"
+                            logtext+=unit.attack(unit.locked_unit)[1]
                         for weapon in unit.weapon_list:
                             unit_index = random.randint(0,len(unit_list)-1)
                             if unit in unit_list:
@@ -505,14 +506,15 @@ class UnitGroup(DirectedAsset):
                             elif unit in enemy_units:
                                 enemy = unit_list[unit_index]
                             if weapon.check_battlespace(enemy):
-                                weapon.attack(enemy)
                                 logtext+=f"- {unit.nickname}'s {weapon.name} attacks {enemy.nickname}\n"
+                                logtext+=weapon.attack(enemy)[1]
 
                     self.fought_this_turn = True
                     self.enemy_unit_group.fought_this_turn = True
             if len(logfilepath)!=0:
-                logfile = open(logfilepath,"a")
-                logfile.write(logtext)
+                with open(logfilepath,"a") as logfile:
+                    logfile.write(logtext)
+            return len(self.unit_list) - len(enemy_units)
         else:
             return len(self.unit_list) # Else return the number of units as a sort of occupation amount
 
@@ -550,20 +552,20 @@ class UnitGroup(DirectedAsset):
                 for unit in unit_list:
                     if unit.locked_unit!=None:
                         if unit.check_battlespace(unit.locked_unit):
-                            unit.attack(unit.locked_unit)
+                            logtext+=f"{unit.nickname} attacked {unit.locked_unit.nickname}\n"
+                            logtext+=unit.attack(unit.locked_unit)[1]
                             if self.fight_type == "pairup":
-                                logtext+=f"{unit.nickname} attacked {unit.locked_unit} with:\n"
                                 for weapon in unit.weapon_list:
                                     if weapon.check_battlespace(unit.locked_unit):
-                                        weapon.attack(unit.locked_unit)
-                                        logtext+=f"- {weapon.name}\n"
+                                        logtext+=f"{unit.nickname} attacked {unit.locked_unit.nickname} with: {weapon.name}\n"
+                                        logtext+=weapon.attack(unit.locked_unit)[1]
                             elif self.fight_type == "randomall":
                                 for weapon in unit.weapon_list:
                                     unit_index = random.randint(0,len(enemy_units)-1)
                                     enemy = enemy_units[unit_index]
                                     if weapon.check_battlespace(enemy):
-                                        weapon.attack(enemy)
                                         logtext+=f"{unit.nickname} attacked {enemy.nickname} with {weapon.name}\n"
+                                        logtext+=weapon.attack(enemy)[1]
                 
                 if len(logfilepath)!=0:
                     logfile = open(logfilepath,"a")
@@ -710,8 +712,6 @@ class Unit(Asset):
         self.owner_nation = None # Will be assigned when it is hooked by the nation.
         self.has_hooked = False
 
-    
-
     def load_asset(self,json_data:dict):
         """ Takes json data in the form of a dictionary and loads its properties from there"""
         self.uid = json_data["uid"]
@@ -742,8 +742,10 @@ class Unit(Asset):
         json_data["battlespace"] = self.battlespace
         return(json_data)
 
-    def attack(self,enemy_unit)->bool:
+    def attack(self,enemy_unit)->list[bool,str]:
         enemy_unit:Unit = enemy_unit
+        logtext=""
+        boolval = False
 
         if enemy_unit.battlespace == "ground":
             damagesoft = self.damage_soft*(self.morale_current/self.morale_max) - enemy_unit.armour
@@ -753,40 +755,55 @@ class Unit(Asset):
             if damagehard>enemy_unit.armour:
                 damagehard = enemy_unit.armour
             enemy_unit.morale_current -= damagesoft+damagehard
+            logtext+=f"{damagesoft} soft damage + {damagehard} hard morale damage\n"
         
         elif enemy_unit.battlespace == "air":
             enemy_unit.air_integrity_current -= self.air_attack*(1-enemy_unit.dodge)
-        
+            logtext+=f"Against dodge, {self.air_attack*(1-enemy_unit.dodge)} air integrity damage\n"
+
         elif enemy_unit.battlespace == "naval":
             if enemy_unit.naval_armour<=self.naval_ap:
                 enemy_unit.hull_health_current-=self.naval_damage
+                logtext+=f"{self.naval_damage} hull damage\n"
+            else:
+                logtext+=f"Didn't pierce armour\n"
 
         elif enemy_unit.battlespace == "space" and self.orbital_attack:
             if random.random() > enemy_unit.orbital_defence:
                 enemy_unit.kill_self()
-                return True
+                logtext+=f"Orbital strike successful\n"
+                boolval = True
             else:
-                return False
+                logtext+=f"Orbital strike failed\n"
+                boolval = False
         
         elif enemy_unit.battlespace == "cyber":
             if self.cyber_offense > enemy_unit.cyber_defence:
-                return True
+                logtext+=f"Cyber attack successful\n"
+                boolval = True
             else:
-                return False
+                logtext+=f"Cyber attack failed\n"
+                boolval = False
         
         elif enemy_unit.battlespace == "covert": # Possibly consider adding a critical failure condition
             if self.covert_ops_score > enemy_unit.intelligence:
                 if self.covert_ops_score > enemy_unit.intelligence+5:
+                    logtext+=f"Covert operation successful\n"
                     return True
                 else:
                     self.morale_current-=enemy_unit.damage_soft*(enemy_unit.morale_current/enemy_unit.morale_max)
+                    logtext+=f"Covert operation successful but took {enemy_unit.damage_soft*(enemy_unit.morale_current/enemy_unit.morale_max)} damage\n"
                     return True
             else:
+                logtext+=f"Covert operation failed\n"
                 return False
 
-        if self.compels_reaction:
-            enemy_unit.attack(self)
-            
+        if self.compels_reaction: # Used for support units that can be attacked back etc.
+            logtext+=f"{enemy_unit.nickname} retaliates\n"
+
+            logtext+=enemy_unit.attack(self)[1]
+        return [boolval,logtext]
+
     def check_battlespace(self,enemy)->bool:
         enemy:Unit = enemy
         if enemy.battlespace in self.possible_battlespaces:
@@ -882,6 +899,8 @@ class Weapon(Asset):
 
     def attack(self,enemy_unit)->bool:
         enemy_unit:Unit = enemy_unit
+        logtext = ""
+        boolval = False
 
         if enemy_unit.battlespace == "ground":
             damagesoft = self.damage_soft*(self.owner_unit.morale_current/self.owner_unit.morale_max) - enemy_unit.armour
@@ -891,36 +910,51 @@ class Weapon(Asset):
             if damagehard>enemy_unit.armour:
                 damagehard = enemy_unit.armour
             enemy_unit.morale_current -= damagesoft+damagehard
+            logtext+=f"{damagesoft} soft damage + {damagehard} hard morale damage\n"
         
         elif enemy_unit.battlespace == "air":
             enemy_unit.air_integrity_current -= self.air_attack*(1-enemy_unit.dodge)
+            logtext+=f"Against dodge, {self.air_attack*(1-enemy_unit.dodge)} air integrity damage\n"
         
         elif enemy_unit.battlespace == "naval":
             if enemy_unit.naval_armour<=self.naval_ap:
                 enemy_unit.hull_health_current-=self.naval_damage
+                logtext+=f"{self.naval_damage} hull damage\n"
+            else:
+                logtext+=f"Didn't pierce armour\n"
 
         elif enemy_unit.battlespace == "space" and self.orbital_attack:
             if random.random() > enemy_unit.orbital_defence:
                 enemy_unit.kill_self()
-                return True
+                logtext+=f"Orbital strike successful\n"
+                boolval = True
             else:
-                return False
+                logtext+=f"Orbital strike failed\n"
+                boolval = False
         
         elif enemy_unit.battlespace == "cyber":
             if self.cyber_offense > enemy_unit.cyber_defence:
-                return True
+                logtext+=f"Cyber attack successful\n"
+                boolval = True
             else:
-                return False
+                logtext+=f"Cyber attack failed\n"
+                boolval = False
         
         elif enemy_unit.battlespace == "covert": # Possibly consider adding a critical failure condition
             if self.covert_ops_score > enemy_unit.intelligence:
                 if self.covert_ops_score > enemy_unit.intelligence+5:
-                    return True
+                    logtext+=f"Covert operation successful\n"
+                    boolval = True
                 else:
                     self.owner_unit.morale_current-=enemy_unit.damage_soft*(enemy_unit.morale_current/enemy_unit.morale_max)
-                    return True
+                    logtext+=f"Covert operation successful but took {enemy_unit.damage_soft*(enemy_unit.morale_current/enemy_unit.morale_max)} damage\n"
+                    boolval = True
             else:
-                return False
+                logtext+=f"Covert operation failed\n"
+                boolval = False
+
+        return [boolval,logtext]
+
 
 ######## WEALTH
 

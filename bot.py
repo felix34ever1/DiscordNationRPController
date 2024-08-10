@@ -490,8 +490,8 @@ async def nationsignup(context: commands.Context):
     except asyncio.TimeoutError:
         await DM_target.send("Timeout error. Please try again")
     
-    # taketurn
-@bot.command()
+    
+@bot.command() # taketurn
 async def taketurn(context: commands.Context):
     channel = context.channel
     for nation in nation_list:

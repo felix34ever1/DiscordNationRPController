@@ -7,7 +7,7 @@
                 "1"
             ],
             "defender nation uid": [],
-            "battle uids": []
+            "front uids": []
         },
         {
             "uid": 0,
@@ -18,7 +18,7 @@
             "defender nation uid": [
                 "549995061136326666"
             ],
-            "battle uids": []
+            "front uids": []
         }
     ]
 }

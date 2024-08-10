@@ -53,6 +53,7 @@ destroyer = asset.Destroyer()
 
 # weapons
 bombs = asset.Weapon()
+bombs.name = "bombs"
 bombs.damage_soft = 5.0
 bombs.possible_battlespaces.append("ground")
 
@@ -91,8 +92,8 @@ unitgroup3.unit_list.append(planes1)
 unitgroup3.unit_list.append(planes2)
 unitgroup4 = asset.UnitGroup()
 unitgroup4.allied_unit_group = unitgroup2
-unitgroup4.unit_list.append(planes1)
-unitgroup4.unit_list.append(planes2)
+unitgroup4.unit_list.append(planes3)
+unitgroup4.unit_list.append(planes4)
 
 unitgroup1.enemy_unit_group = unitgroup2
 unitgroup3.allied_unit_group = unitgroup1
@@ -104,11 +105,6 @@ unitgroup3.fight_length = 1
 # unitgroup1.fought_this_turn = False
 # unitgroup2.fought_this_turn = False
 
-# for unit in unit_list:
-#     print(unit.display())
-
-# unitgroup1.attack()
-# print("--------Turn 2----------")
 
 # for unit in unit_list:
 #     print(unit.display())
@@ -119,8 +115,26 @@ unitgroup3.fight_length = 1
 # war_list[0].aggressor_nation_uids.append("1")
 # main.save_wars(war_list)
 
+unitgroup1.nickname="Allied Front"
+unitgroup2.nickname="Entente Front"
+unitgroup3.nickname="Allied Air Wing"
+unitgroup4.nickname="Entente Air Wing"
+
 war_list:list[war.War] = []
+front_list:list[war.Front] = []
+new_front = war.Front()
+new_front.attacker_unit_group = unitgroup1
+new_front.attacker_unit_group_id = unitgroup1.uid
+new_front.defender_unit_group = unitgroup2
+new_front.defender_unit_group_id = unitgroup2.uid
+new_front.attack_support_unit_groups.append(unitgroup3)
+new_front.defend_support_unit_groups.append(unitgroup4)
+front_list.append(new_front)
+for front in front_list:
+    front.take_turn()
 
-main.load_wars(war_list)
+for unit in unit_list:
+    print(unit.display())
 
-print(war_list[0].name)
+# unitgroup1.attack()
+# print("--------Turn 2----------")

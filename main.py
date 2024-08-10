@@ -1,7 +1,7 @@
 import json
 from nation import Nation
 from asset import Asset,Unit,UnitGroup
-from war import War,Battle
+from war import War,Front
 import assethandler
 
 
