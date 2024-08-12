@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from nation import Nation
 from asset import Asset,UnitGroup,Unit
-from war import War,nextWarID,Battle
+from war import War,nextWarID,Front,nextFrontID
 import assethandler
 
 TOKEN = os.getenv("TOKEN")
@@ -18,6 +18,7 @@ TOKEN = os.getenv("TOKEN")
 nation_list: list[Nation] = []
 asset_list: list[Asset] = []
 war_list: list[War] = []
+front_list: list[Front] = []
 assetStore = assethandler.AssetStore(asset_list,nation_list)
 
 # Bot Stuff
@@ -43,9 +44,8 @@ async def test(context:commands.Context,input_text):
         pass
     else:
         await context.channel.send("Hello")
-
-    # nationinfo
-@bot.command()
+    
+@bot.command() # nationinfo
 async def nationinfo(context:commands.Context):
     """Gives data on one nation entities in the game"""
     channel = context.message.channel
@@ -54,8 +54,7 @@ async def nationinfo(context:commands.Context):
         if nation.player_name == str(context.message.author.id):
             await channel.send(nation.display())
 
-    # nationeconomy
-@bot.command()
+@bot.command() # nationeconomy
 async def nationeconomy(context:commands.Context):
     """Gives economic report on nation"""
     channel = context.message.channel
@@ -63,8 +62,7 @@ async def nationeconomy(context:commands.Context):
         if nation.player_name == str(context.message.author.id):
             await channel.send(nation.economy_prediction())
 
-    # nationlookupall
-@bot.command()
+@bot.command() # nationlookupall
 async def nationlookupall(context:commands.Context):
     """Gives data on all nation entities in the game"""
     channel = context.message.channel
@@ -74,8 +72,7 @@ async def nationlookupall(context:commands.Context):
             for nation in nation_list:
                 await channel.send(nation.display())
 
-    #savenations
-@bot.command()
+@bot.command() # savenations
 async def savenations(context:commands.Context):
     channel = context.message.channel
     author_roles = context.message.author.roles
@@ -83,8 +80,9 @@ async def savenations(context:commands.Context):
         if role.name == ">Administrator":
             main.save_assets(asset_list)
             main.save_nations(nation_list)
-
-    
+            main.save_fronts(front_list)
+            main.save_wars(war_list)
+  
 @bot.command() #managenation
 async def managenation(context:commands.Context):
     """ A command that allows the user to access nation assets or build new ones"""
@@ -417,6 +415,169 @@ War Menu: Please type selected option\n
             war_list.append(new_war)
 
             await channel.send(f"Succesfully created {new_war.name} against {target_nation.name}")
+        elif choice == 2:
+            selectable_wars:list[War] = []
+            for war in war_list:
+                if cur_nation.player_name in war.aggressor_nation_uids or cur_nation.player_name in war.defender_nation_uids: # find all wars player is part of:
+                    selectable_wars.append(war)
+            if len(selectable_wars)==0:
+                raise Exception("No wars to select.")
+            await channel.send("Select war by index:\n Index -- War Name\n")
+            text = ""
+            i = 0
+            for war in selectable_wars: # Lists out all wars player is part of
+                text+=f"{i} - {war.name}\n"
+                i+=1
+            await channel.send(text)
+            war_selection = int((await bot.wait_for('message',check=check)).content)
+            if war_selection < 0 or war_selection >= len(selectable_wars):
+                raise Exception("Selection is out of bounds\n")
+
+            selected_war = selectable_wars[war_selection]
+            await channel.send( # Opens up the menu for a selecter war
+f"""
+{selected_war.name} Menu Options:
+1. Start a front
+2. Manage fronts - Assign unit groups, view reports
+
+""") 
+            choice = int((await bot.wait_for('message',check=check)).content)
+            if choice == 1: # Ability to start a new front
+                await channel.send(
+f"""
+Select Front Battlespace: (Will only be able to use unit groups that can target this battlespace)
+1. Ground
+2. Air
+3. Sea
+4. Space
+5. Cyber
+6. Covert
+7. Strategic
+"""
+                )
+                battlespace_choice = int((await bot.wait_for('message',check=check)).content)
+                if battlespace_choice < 1 or battlespace_choice >7:
+                    raise Exception("Selection out of bounds\n")
+                else:
+                    new_front = Front()
+                    if battlespace_choice == 1:
+                        new_front.battlespace = "ground"
+                    if battlespace_choice == 2:
+                        new_front.battlespace = "air"
+                    if battlespace_choice == 3:
+                        new_front.battlespace = "sea"
+                    if battlespace_choice == 4:
+                        new_front.battlespace = "space"
+                    if battlespace_choice == 5:
+                        new_front.battlespace = "cyber"
+                    if battlespace_choice == 6:
+                        new_front.battlespace = "covert"
+                    if battlespace_choice == 7:
+                        new_front.battlespace = "strategic"
+                # Pick a name for front
+                await channel.send("Please name the front:")
+                front_name = (await bot.wait_for('message',check=check)).content
+                if len(front_name) == 0:
+                    raise Exception("Front name cannot be empty.")
+                # Instantiate the front
+                new_front.name = front_name 
+                new_front.uid = nextFrontID(front_list)
+                selected_war.fronts.append(new_front)
+                selected_war.front_uids.append(new_front.uid)
+                front_list.append(new_front)
+                await channel.send(f"Successfully started {new_front.name}")
+            elif choice == 2: # Manage a front
+                text = "Select front by index:\nIndex - Front Name\n"
+                i = 0
+                for front in selected_war.fronts:
+                    text+=f"{i} - {front.name}"
+                    i+=1
+                await channel.send(text)
+                indexchoice = int((await bot.wait_for('message',check=check)).content)
+                if indexchoice < 0 or indexchoice >= len(selected_war.fronts):
+                    raise Exception("Selection is out of bounds\n")
+                selected_front = selected_war.fronts[indexchoice]
+                await channel.send(
+f"""{selected_front.name} Menu Options:
+1. Add main unit group (1 max)
+2. Add supporting unit group
+3. View latest conflict log
+""")
+                choice = int((await bot.wait_for('message',check=check)).content)
+                if choice == 1: # Add a main unit
+                    #checks if there is already a unit group as the main group
+                    if (cur_nation.player_name in selected_war.aggressor_nation_uids and selected_front.attacker_unit_group != None) or (cur_nation.player_name in selected_war.defender_nation_uids and selected_front.defender_unit_group != None):
+                        raise Exception("There already is one main UnitGroup on your side")
+                    # Goes through all unit groups and lists possible choices
+                    potential_unitgroups:list[UnitGroup] = []
+                    for asset in asset_list:
+                        if isinstance(asset,UnitGroup):
+                            # Checks if unit has the correct battlespace and belongs to the player and isnt supporting
+                            if selected_front.battlespace in asset.attackable_battlespaces and (asset in cur_nation.assets_force or asset in cur_nation.assets_political or asset in cur_nation.assets_wealth) and asset.supporting != True:
+                                potential_unitgroups.append(asset)
+                    if len(potential_unitgroups) == 0:
+                        raise Exception("No UnitGroups available")
+                    text = "Select unit group to become your attacking/defending group by Index. \n Index - UnitGroup Name\n"
+                    i = 0
+                    for unitgroup in potential_unitgroups: # List out all possible unitgroups
+                        text+=f"{i} - {unitgroup.nickname}\n"
+                        i+=1
+                    await channel.send(text)
+                    indexchoice = int((await bot.wait_for('message',check=check)).content)
+                    if indexchoice<0 or indexchoice>= len(potential_unitgroups):
+                        raise Exception("Selection is out of bounds\n")
+                    selected_unitgroup = potential_unitgroups[indexchoice]
+                    # Check if unitgroup is already in another front
+                    for front in front_list:
+                        if selected_unitgroup in front.attack_support_unit_groups or selected_unitgroup in front.defend_support_unit_groups or selected_unitgroup == front.attacker_unit_group or selected_unitgroup == front.defender_unit_group:
+                            raise Exception(f"Unit Group is already in front: {front.name}, to remove it from there, first finish the war on that front. ")
+
+                    # Check which side unitgroup is on and add it
+                    if cur_nation.player_name in selected_war.aggressor_nation_uids:
+                        selected_front.attacker_unit_group = selected_unitgroup
+                        selected_front.attacker_unit_group_id = selected_unitgroup.uid
+                        channel.send(f"successfully added {selected_unitgroup.nickname} to {selected_front.name} as attacking unit group")
+                    elif cur_nation.player_name in selected_war.defender_nation_uids:
+                        selected_front.defender_unit_group = selected_unitgroup
+                        selected_front.defender_unit_group_id = selected_unitgroup.uid
+                        channel.send(f"successfully added {selected_unitgroup.nickname} to {selected_front.name} as defending unit group")
+                elif choice == 2: # Add a supporting unit         
+                    # Goes through all unit groups and lists possible choices
+                    potential_unitgroups:list[UnitGroup] = []
+                    for asset in asset_list:
+                        if isinstance(asset,UnitGroup):
+                            # Checks if unit has the correct battlespace and belongs to the player and is supporting
+                            if selected_front.battlespace in asset.attackable_battlespaces and (asset in cur_nation.assets_force or asset in cur_nation.assets_political or asset in cur_nation.assets_wealth) and asset.supporting == True:
+                                potential_unitgroups.append(asset)
+                    if len(potential_unitgroups) == 0:
+                        raise Exception("No UnitGroups available")
+                    text = "Select unit group to add to supporting unit groups by Index. \n Index - UnitGroup Name\n"
+                    i = 0
+                    for unitgroup in potential_unitgroups: # List out all possible unitgroups
+                        text+=f"{i} - {unitgroup.nickname}\n"
+                        i+=1
+                    await channel.send(text)
+                    indexchoice = int((await bot.wait_for('message',check=check)).content)
+                    if indexchoice<0 or indexchoice>= len(potential_unitgroups):
+                        raise Exception("Selection is out of bounds\n")
+                    selected_unitgroup = potential_unitgroups[indexchoice]
+                    # Check if unitgroup is already in another front
+                    for front in front_list:
+                        if selected_unitgroup in front.attack_support_unit_groups or selected_unitgroup in front.defend_support_unit_groups or selected_unitgroup == front.attacker_unit_group or selected_unitgroup == front.defender_unit_group:
+                            raise Exception(f"Unit Group is already in front: {front.name}, to remove it from there, first finish the war on that front. ")
+
+                    # Check which side unitgroup is on and add it
+                    if cur_nation.player_name in selected_war.aggressor_nation_uids:
+                        selected_front.attack_support_unit_groups.append(selected_unitgroup)
+                        selected_front.attack_support_unit_group_ids.append(selected_unitgroup.uid)
+                        channel.send(f"successfully added {selected_unitgroup.nickname} to {selected_front.name} as attacker supporting unit group")
+                    elif cur_nation.player_name in selected_war.defender_nation_uids:
+                        selected_front.defend_support_unit_groups.append(selected_unitgroup)
+                        selected_front.defend_support_unit_group_ids.append(selected_unitgroup.uid)
+                        channel.send(f"successfully added {selected_unitgroup.nickname} to {selected_front.name} as defender supporting unit group")
+                elif choice == 3: # Send latest log
+                    await channel.send(selected_front.latestlog)
+
 
     except Exception as error:
         await channel.send(f"Error completing command: {error}")
@@ -430,6 +591,8 @@ async def shutdown(context:commands.Context):
         file.write("Assets Saved\n")
         main.save_wars(war_list)
         file.write("Wars Saved\n")
+        main.save_fronts(front_list)
+        file.write("Fronts Saved\n")
         main.save_nations(nation_list)
         file.write("Nations Saved\n")
         file.write(f"shutting down at {time.ctime(time.time())}\n")
@@ -506,12 +669,15 @@ async def on_ready():
         assetStore.nextID()
         await status_channel.send("Asset Loading Complete")
         file.write("Assets Loaded\n")
-        main.load_wars(war_list)
-        await status_channel.send("War Loading Complete")
-        file.write("Wars Loaded\n")
         main.load_nations(nation_list,asset_list)
         await status_channel.send("Nation Loading Complete")
         file.write("Nations Loaded\n")
+        main.load_fronts(front_list,asset_list)
+        await status_channel.send("Front Loading Complete")
+        file.write("Fronts Loaded\n")
+        main.load_wars(war_list,nation_list,front_list)
+        await status_channel.send("War Loading Complete")
+        file.write("Wars Loaded\n")
         await status_channel.send(f"Bot finished initialising at {time.ctime(time.time())}")
         file.write(f"Bot finished initialising at {time.ctime(time.time())}\n")
         # task1 = asyncio.create_task(timer())

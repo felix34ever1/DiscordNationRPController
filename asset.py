@@ -298,7 +298,7 @@ class UnitGroup(DirectedAsset):
         self.type = "" # Wealth, Political or Force
         self.tier = 1 # How high the country has to have a level in the type 
         self.battlespaces:list[str] = [] # Type of units that can be kept in this group, usually just one type
-        self.attackable_battlespaces:list[str] = [] # types of units that can be 
+        self.attackable_battlespaces:list[str] = [] # types of battlespaces that can be joined by this group
         self.construction_time = 0 # The amount of turns left until it finishes building (0 if complete)
         self.asset_list:list[Asset] = None
         self.activated = True

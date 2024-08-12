@@ -1,0 +1,15 @@
+{
+    "list": [
+        {
+            "uid": 0,
+            "name": "Ground Invasion",
+            "battlespace": "ground",
+            "attacker unit group id": 18,
+            "defender unit group id": -1,
+            "attack support unit group ids": [],
+            "defend support unit group ids": [],
+            "latest log": "",
+            "attacker advantage": 0
+        }
+    ]
+}

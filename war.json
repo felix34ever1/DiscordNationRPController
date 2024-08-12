@@ -1,15 +1,6 @@
 {
     "list": [
         {
-            "uid": -1,
-            "name": "Pointless ahh war",
-            "aggressor nation uid": [
-                "1"
-            ],
-            "defender nation uid": [],
-            "front uids": []
-        },
-        {
             "uid": 0,
             "name": "Norway-Iran Conflict",
             "aggressor nation uid": [
@@ -18,7 +9,9 @@
             "defender nation uid": [
                 "549995061136326666"
             ],
-            "front uids": []
+            "front uids": [
+                0
+            ]
         }
     ]
 }

@@ -1,48 +1,6 @@
 from nation import Nation
-from asset import UnitGroup
+from asset import UnitGroup,Asset
 
-class War:
-
-    def __init__(self) -> None:
-        """War class, holds data on all nations fighting in war as well as all the fronts that are being held. It also determines 
-        which units engage eachother in scenarios such as naval or aerial engagement which are based on search and destroy tactics. 
-        """
-        self.uid = -1 # Unique identifier
-        self.name = "" # Name of the war
-        self.aggressor_nation_uids:list[str] = [] # player names used as UID
-        self.aggressor_nations:list[Nation] = []
-        self.defender_nation_uids:list[str] = [] # Player names used as UID
-        self.defender_nations:list[Nation] = []
-        self.fronts:list[Front] = []
-        self.front_uids:list[int] = []
-
-    def hook_nations(self,nation_list:list[Nation]):
-        for nation in nation_list:
-            if nation.player_name in self.aggressor_nation_uids:
-                self.aggressor_nations.append(nation)
-            elif nation.player_name in self.defender_nation_uids:
-                self.defender_nations.append(nation)
-
-
-    def load_war(self,json_data:dict):
-        """ Takes json data in the form of a dictionary and loads its properties from there"""
-        self.uid = json_data["uid"]
-        self.name = json_data["name"]
-        self.aggressor_nation_uids = json_data["aggressor nation uid"]
-        self.defender_nation_uids = json_data["defender nation uid"]
-        self.front_uids = json_data["front uids"]
-
-    def export_war(self)->dict:
-        """Turn the war into json data to be exported, returns a dictionary"""
-        json_data = {}
-        json_data["uid"] = self.uid
-        json_data["name"] = self.name
-        json_data["aggressor nation uid"] = self.aggressor_nation_uids
-        json_data["defender nation uid"] = self.defender_nation_uids
-        json_data["front uids"] = self.front_uids
-    
-
-        return(json_data)
 
 class Front:
 
@@ -59,8 +17,20 @@ class Front:
         self.attack_support_unit_group_ids:list[int] = []
         self.defend_support_unit_groups:list[UnitGroup] = []
         self.defend_support_unit_group_ids:list[int] = []
-        self.latestlog:str = []
+        self.latestlog:str = ""
         self.attacker_advantage = 0 # Negative numbers are defender advantage, represents occupation or some shit
+    
+    def hook_unit_groups(self,asset_list:list[Asset]):
+        for potential_group in asset_list:
+            if isinstance(potential_group,UnitGroup):
+                if potential_group.uid == self.attacker_unit_group_id:
+                    self.attacker_unit_group = potential_group
+                elif potential_group.uid == self.defender_unit_group_id:
+                    self.defender_unit_group = potential_group
+                elif potential_group.uid in self.attack_support_unit_group_ids:
+                    self.attack_support_unit_groups.append(potential_group)
+                elif potential_group.uid in self.defend_support_unit_group_ids:
+                    self.defend_support_unit_groups.append(potential_group)
 
     def load_front(self,json_data:dict):
         """ Takes json data in the form of a dictionary and loads its properties from there"""
@@ -86,6 +56,7 @@ class Front:
         json_data["defend support unit group ids"] = self.defend_support_unit_group_ids
         json_data["latest log"] = self.latestlog
         json_data["attacker advantage"] = self.attacker_advantage
+        return json_data
 
     def take_turn(self):
         """ Performs combat between the two sides, to be done once per turn, on the take_turn step. """
@@ -108,6 +79,53 @@ class Front:
             with open("combat.log","a") as combatlog:
                 combatlog.write(logtext)
 
+class War:
+
+    def __init__(self) -> None:
+        """War class, holds data on all nations fighting in war as well as all the fronts that are being held. It also determines 
+        which units engage eachother in scenarios such as naval or aerial engagement which are based on search and destroy tactics. 
+        """
+        self.uid = -1 # Unique identifier
+        self.name = "" # Name of the war
+        self.aggressor_nation_uids:list[str] = [] # player names used as UID
+        self.aggressor_nations:list[Nation] = []
+        self.defender_nation_uids:list[str] = [] # Player names used as UID
+        self.defender_nations:list[Nation] = []
+        self.fronts:list[Front] = []
+        self.front_uids:list[int] = []
+
+    def hook_nations(self,nation_list:list[Nation]):
+        for nation in nation_list:
+            if nation.player_name in self.aggressor_nation_uids:
+                self.aggressor_nations.append(nation)
+            elif nation.player_name in self.defender_nation_uids:
+                self.defender_nations.append(nation)
+    
+    def hook_fronts(self,front_list:list[Front]):
+        for front in front_list:
+            if front.uid in self.front_uids:
+                self.fronts.append(front)
+
+
+    def load_war(self,json_data:dict):
+        """ Takes json data in the form of a dictionary and loads its properties from there"""
+        self.uid = json_data["uid"]
+        self.name = json_data["name"]
+        self.aggressor_nation_uids = json_data["aggressor nation uid"]
+        self.defender_nation_uids = json_data["defender nation uid"]
+        self.front_uids = json_data["front uids"]
+
+    def export_war(self)->dict:
+        """Turn the war into json data to be exported, returns a dictionary"""
+        json_data = {}
+        json_data["uid"] = self.uid
+        json_data["name"] = self.name
+        json_data["aggressor nation uid"] = self.aggressor_nation_uids
+        json_data["defender nation uid"] = self.defender_nation_uids
+        json_data["front uids"] = self.front_uids
+    
+
+        return(json_data)
 
 
 def nextWarID(war_list:list[War])->int:
@@ -120,8 +138,30 @@ def nextWarID(war_list:list[War])->int:
         int: The lowest free ID for a war.
     """
     id_set:set = set()
-    for war in war_list:
-        id_set.add(war.uid)
-    for i in range(max(id_set)+2):
-        if i not in id_set:
-            return(i)
+    if len(war_list) == 0:
+        return 0
+    else:
+        for war in war_list:
+            id_set.add(war.uid)
+        for i in range(max(id_set)+2):
+            if i not in id_set:
+                return(i)
+        
+def nextFrontID(front_list:list[Front])->int:
+    """Finds the next free ID to use for a new War.
+
+    Args:
+        front_list (list[Front]): List of all fronts.
+
+    Returns:
+        int: The lowest free ID for a front.
+    """
+    if len(front_list) == 0:
+        return 0
+    else:
+        id_set:set = set()
+        for front in front_list:
+            id_set.add(front.uid)
+        for i in range(max(id_set)+2):
+            if i not in id_set:
+                return(i)
